@@ -323,6 +323,26 @@ dialog[open] { animation: rise 0.35s var(--ease); }
 .m-learned h3 { margin: 0 0 6px; font-size: 1rem; }
 .m-learned ul { margin: 0; padding-left: 1.2em; }
 
+.m-h { margin: 18px 0 6px; font-size: 1rem; }
+.m-learned ol { margin: 0; padding-left: 1.3em; display: grid; gap: 10px; color: var(--muted); }
+.m-learned ol b { color: var(--text); }
+.th { display: inline-block; margin-left: 4px; padding: 1px 8px; font-size: 0.72rem; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+
+/* ===== Lesson on project cards ===== */
+.p-lesson { display: flex; gap: 8px; align-items: flex-start; margin: -4px 0 14px; padding: 10px 12px; font-size: 0.9rem; color: var(--text) !important; border-radius: 10px; background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.p-lesson small { display: block; font: 600 0.68rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+
+/* ===== What my projects taught me ===== */
+#themeChips { margin: 8px 0 20px; }
+.chip b { margin-left: 4px; font: 600 0.75rem var(--mono); opacity: 0.7; }
+.lessons { columns: 3 280px; column-gap: 16px; }
+.lesson { display: flex; flex-direction: column; gap: 6px; width: 100%; margin: 0 0 16px; padding: 18px; text-align: left; font: inherit; color: var(--text); break-inside: avoid; cursor: pointer; transition: transform 0.3s var(--ease), border-color 0.3s; animation: rise 0.45s var(--ease) both; animation-delay: calc(var(--i) * 30ms); }
+.lesson:hover, .lesson:focus-visible { transform: translateY(-4px); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.l-proj { font: 600 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.lesson b { font-size: 1.02rem; line-height: 1.3; }
+.l-d { font-size: 0.9rem; color: var(--muted); }
+.l-th { align-self: flex-start; margin-top: 4px; padding: 2px 10px; font-size: 0.75rem; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+
 /* ===== MEDS case study ===== */
 .cs-stats { list-style: none; padding: 0; margin: 24px 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .cs-stats li { padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
@@ -400,6 +420,8 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
 }
 @media (max-width: 760px) {
   .menu-btn { display: grid; }
+  #themeChips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 2px 16px 8px; scrollbar-width: none; }
+  #themeChips .chip { flex: none; }
   .cs-stats { grid-template-columns: repeat(2, 1fr); }
   .arch { grid-template-columns: repeat(2, 1fr); }
   .pipe { grid-template-columns: 1fr; }
@@ -431,7 +453,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   :root, :root[data-theme] { --bg: #fff; --bg-2: #fff; --surface: #fff; --surface-2: #f3f4f6; --border: #d1d5db; --text: #111; --muted: #444; --accent: #006b55; --accent-2: #333; --accent-ink: #fff; color-scheme: light; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
   body { font-size: 10.5pt; line-height: 1.45; background: #fff; }
-  .proof, .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
+  #lessons, .proof, .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
   .print-head { display: block; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 2px solid #006b55; }
   .print-head h1 { font-size: 20pt; margin: 0 0 2px; }
   .print-head p { margin: 0; font-size: 9.5pt; color: #333; }
@@ -456,6 +478,8 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .p-card[hidden] { display: block !important; }
   .p-body { padding: 0; display: block; }
   .p-body p { margin-bottom: 2px; }
+  .p-lesson { margin: 2px 0 4px; padding: 0; background: none; font-size: 9.5pt; }
+  .p-lesson small { display: inline; margin-right: 4px; }
   .tags { margin: 0; gap: 4px; }
   .tags li { padding: 0 5px; font-size: 8pt; }
   .skills { grid-template-columns: repeat(2, 1fr); gap: 4px 16px; margin-top: 4px; }

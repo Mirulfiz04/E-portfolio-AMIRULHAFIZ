@@ -7,6 +7,9 @@ root.classList.add("js");
 $("#year").textContent = new Date().getFullYear();
 
 /* ---------- Data ---------- */
+// lesson themes: sec = Security, data = Data & AI, arch = Architecture & APIs,
+// team = Teamwork & leadership, users = Users & clients, ship = Shipping & process, fund = Fundamentals
+const themes = { sec: "🔒 Security", data: "🧠 Data & AI", arch: "🧩 Architecture & APIs", team: "🤝 Teamwork & leadership", users: "🙋 Users & clients", ship: "🚀 Shipping & process", fund: "⚙️ Fundamentals" };
 const projects = [
   {
     id: "meds",
@@ -16,6 +19,7 @@ const projects = [
     emoji: "🧠💓",
     award: "Paper @ ISIRA 2026",
     blurb: "Final-year project. Reads emotion from face, heart rate and voice, with a hardened Supabase backend and a CI/CD pipeline that tests and ships every change.",
+    challenge: "A camera alone is a poor judge of emotion: lighting, angle and a straight face all fool it. I wanted a phone app that cross-checks the face against the body, while keeping each user’s data private.",
     points: [
       "Flutter app with an on-device TFLite face-emotion model (MobileNet transfer learning) and a voice-emotion model for an “Are you OK?” check-in.",
       "ESP32 + MAX30102 sends heart rate and SpO₂; late fusion uses HR change as an arousal signal, with smoothing and hysteresis.",
@@ -23,10 +27,12 @@ const projects = [
       "GitHub Actions CI/CD: Flutter tests, Python self-checks and Deno type checks on every PR; release APK and Edge Function deploy on merge.",
       "Design paper presented at ISIRA 2026."
     ],
-    learned: [
-      "Security lives on the server: RLS and triggers, not checks in the app.",
-      "Honest evaluation: I found ~75% train/test overlap in my dataset and fixed it.",
-      "CI/CD turns every merge into a tested, shippable release."
+    lessons: [
+      { th: "data", t: "Check the test set before trusting the score", d: "About 75% of my merged FER2013 test faces were also in training. I wrote a dedupe script and rebuilt the split, so the accuracy I report is real." },
+      { th: "sec", t: "The app is not trusted", d: "The API key ships inside every APK, so every rule lives in Postgres (RLS, triggers) or an Edge Function. A check that exists only in Dart is a convenience, not security." },
+      { th: "ship", t: "Automate the risky parts, and pin versions", d: "Six GitHub Actions jobs test every PR and ship every merge. When “latest” of the Supabase CLI broke a deploy, I pinned a known-good version." },
+      { th: "data", t: "Combine signals with humility", d: "Heart rate can’t tell anger from fear, so it only nudges an uncertain face reading and never overrides a confident one." },
+      { th: "ship", t: "Write it down", d: "Backend, AI and training guides, plus an honest list of known limits, mean someone else can run and extend the project." }
     ],
     tags: ["Flutter", "TensorFlow Lite", "Supabase", "PostgreSQL", "GitHub Actions", "ESP32", "Claude API"],
     links: [
@@ -40,19 +46,22 @@ const projects = [
     cats: ["web"],
     img: "assets/project1.jpg",
     award: "🥇 Gold + Best Project",
-    blurb: "Full-stack web system for visual inspection reports: upload and annotate photos, build the report, then submit it for approval. I led the team.",
+    blurb: "Full-stack web system for visual inspection reports: upload and annotate photos, build the report, then submit it for review. I led the team.",
+    challenge: "Industry partner iPetro Services Sdn Bhd set the case study “From Inspection Photo to Visual Inspection Report”: turn raw inspection photos into a finished, reviewed report in one system.",
     points: [
       "Team leader and full-stack developer: planned the work, split tasks and integrated the codebase.",
       "Laravel back end with an Inertia + React + TypeScript front end, shadcn/ui components and Tailwind CSS.",
       "Photo upload with an in-browser image editor for marking findings on inspection photos.",
-      "Report workflow with roles: reports are submitted, then approved. Reports export to PDF.",
+      "Roles (user, reviewer, admin) and a report workflow: draft → submitted → approved or rejected. Reports export to PDF.",
       "Chart.js dashboard and two-factor authentication with Laravel Fortify.",
-      "Won the Gold Award and the Best Project Award at the Workshop II Innovation Competition."
+      "Won the Gold Award and the Best Project Award at the FTMK Workshop II Innovation Competition (15 Jan 2026)."
     ],
-    learned: [
-      "Leading a team means unblocking people: clear task splits and early integration.",
-      "Designing a real approval workflow with roles and states.",
-      "Type-safe React with TypeScript on a Laravel back end."
+    lessons: [
+      { th: "team", t: "Leading means unblocking people", d: "As team leader I split the work by feature and brought it together into one codebase. Integrating early and often is what keeps a team ready to demo." },
+      { th: "arch", t: "Model the workflow as explicit states", d: "Reports move draft → submitted → approved or rejected. Writing down the states, and who may change them, removes a whole class of “how did this get approved?” bugs." },
+      { th: "sec", t: "Check permissions on the server", d: "Only reviewers and admins can approve, and the Laravel controllers enforce it. Hiding a button in React is not access control. 2FA protects the accounts." },
+      { th: "users", t: "Build around the user’s real output", d: "Inspectors annotate findings on the photo in the browser and export a PDF: the same document they actually hand over." },
+      { th: "fund", t: "Let types catch mistakes before users do", d: "TypeScript flags wrong props and missing fields at compile time, which helps when several people edit the same screens." }
     ],
     tags: ["Laravel", "React", "TypeScript", "Inertia", "Tailwind", "Chart.js"],
     links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/WORKSHOP2_IPETRO-VISUAL-INSPECTION" }]
@@ -63,15 +72,18 @@ const projects = [
     cats: ["web"],
     img: "assets/project-suptulang.jpg",
     blurb: "Restaurant ordering system: customers scan the QR code on their table, order and track it, while the kitchen and staff manage orders.",
+    challenge: "Make ordering at a busy restaurant faster: customers order from their own table, and the kitchen and counter see each order straight away.",
     points: [
       "Customer flow: menu with search and categories, add-ons, cart, checkout with 6% SST, payment (online banking or e-wallet) and live order tracking.",
       "Kitchen display and staff dashboard behind a staff login, with order status and mark-as-paid.",
       "PHP REST API over MySQL; order confirmation emails sent with PHPMailer.",
       "A Python script generates a printable QR code for every table."
     ],
-    learned: [
-      "Designing one system for three kinds of user: customers, kitchen and staff.",
-      "Building a small REST API by hand and keeping the front end separate from it."
+    lessons: [
+      { th: "users", t: "One system, three very different users", d: "Customers on phones, cooks at a kitchen display and staff at the counter each get a screen that shows only what they need right now." },
+      { th: "sec", t: "Never build SQL from strings", d: "Every query in the API is a PDO prepared statement and staff passwords are checked with password_verify, so user input can’t rewrite a query." },
+      { th: "arch", t: "Keep the API and the UI apart", d: "The PHP endpoints only return JSON; the pages fetch it. The kitchen and tracking screens poll for updates, which kept the back end simple." },
+      { th: "fund", t: "Script the boring jobs", d: "A small Python script makes a QR code for every table, instead of creating them by hand each time the layout changes." }
     ],
     tags: ["PHP", "MySQL", "JavaScript", "REST API", "Python"],
     links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/group16projectwad" }]
@@ -81,17 +93,20 @@ const projects = [
     title: "NanaDash (SULAM project)",
     cats: ["mobile"],
     img: "assets/project2.jpg",
-    blurb: "Community-service (SULAM) mobile app for a local business, covering ordering, announcements, delivery and product listings.",
+    blurb: "Community-service (SULAM) mobile app for a local business, covering ordering, delivery, announcements and the product catalogue.",
+    challenge: "SULAM community-service project: give a local business one mobile app for ordering, delivery, announcements and its products.",
     points: [
-      "Flutter app with ordering, announcement, delivery and product modules.",
-      "Backed by an API and a MySQL database with user sign-in.",
-      "Delivered as a Software Project Management course project."
+      "Flutter app for customers: products, ordering with delivery options, news and profile.",
+      "Admin screens to manage products, news and orders, including order status updates.",
+      "My own PHP REST API (sign-up, login, password reset, products, news with image upload, orders) over an 8-table MySQL schema.",
+      "Delivered as a Software Project Management course project, with a demo video and project site."
     ],
-    learned: [
-      "Building for a real, non-technical client.",
-      "Planning scope and schedule, and delivering on a deadline."
+    lessons: [
+      { th: "users", t: "Design for the person who runs it", d: "Besides the customer app I built admin screens for products, news and orders, so the business can update its own app without a developer." },
+      { th: "arch", t: "A mobile app is only half the system", d: "The Flutter app talks to an API I wrote myself, from auth and password reset to image uploads. That taught me to design endpoints around the screens that use them." },
+      { th: "ship", t: "Scope to the deadline", d: "Run as a project-management course project: plan the scope, track progress, and ship a working demo on the date." }
     ],
-    tags: ["Flutter", "Dart", "API", "MySQL"],
+    tags: ["Flutter", "Dart", "PHP", "REST API", "MySQL"],
     links: [
       { label: "Demo video", href: "https://www.youtube.com/watch?v=Zkb5oBkfVlA" },
       { label: "GitHub", href: "https://github.com/Mirulfiz04/SULAM-PROJECT-NANADASH" },
@@ -104,14 +119,16 @@ const projects = [
     cats: ["design"],
     emoji: "🏥",
     blurb: "Distributed-applications project: Java Swing desktop clients for patients and doctors, talking to a REST server over HTTP.",
+    challenge: "Paper appointment books cause double bookings and scattered patient records. Build one server that patient and doctor apps share.",
     points: [
       "REST server on Java’s built-in HttpServer, with CORS and endpoints for patients, doctors, treatments, records and appointments (book, reschedule, status).",
       "Separate Swing screens for login, registration, patients and doctors.",
       "MySQL database plus a JSON data layer."
     ],
-    learned: [
-      "How client–server systems talk: HTTP, JSON and API design without a framework.",
-      "Keeping clients thin and putting the rules on the server."
+    lessons: [
+      { th: "arch", t: "Learn HTTP without a framework", d: "Routing requests, parsing JSON and adding CORS by hand on Java’s built-in HttpServer showed me what Laravel or Spring quietly do for you." },
+      { th: "arch", t: "Thin clients, rules on the server", d: "Booking, rescheduling and status changes live in the server, so the patient and doctor apps can never disagree about an appointment." },
+      { th: "fund", t: "Plan for the unhappy path", d: "If the default port is taken, the server tries the next ones instead of crashing on start-up." }
     ],
     tags: ["Java", "Swing", "REST", "MySQL", "JSON"],
     links: [
@@ -125,15 +142,16 @@ const projects = [
     cats: ["design"],
     emoji: "📦",
     blurb: "Software Requirement & Design project: the full specification and design of an inventory system for small and medium retail businesses.",
+    challenge: "Manual stock-taking causes errors, stockouts and overstocking. Specify a system that fixes it before writing any code.",
     points: [
-      "Problem: manual stock tracking causes errors, stockouts and overstocking.",
       "Functional requirements: authentication, real-time tracking by barcode or RFID, low-stock alerts, automatic purchase orders and a sales analytics dashboard.",
       "Non-functional requirements: 50+ concurrent users, AES-256 encryption, role-based access control and 99% uptime.",
       "Use case model with 5 actors (store manager, warehouse staff, supplier, business owner, IT) and 6 use cases."
     ],
-    learned: [
-      "Writing requirements that are specific and testable, not vague wishes.",
-      "Modelling who does what before writing any code."
+    lessons: [
+      { th: "ship", t: "Make requirements testable", d: "“Fast” can’t be tested; “50+ users at once without lag” can. Writing requirements that way makes the design decisions obvious." },
+      { th: "users", t: "Map every actor first", d: "Five actors and six use cases showed who needs what: suppliers only see purchase orders, owners see sales trends." },
+      { th: "sec", t: "Design security in, not on", d: "Encryption and role-based access went into the specification on day one, not into a patch later." }
     ],
     tags: ["Requirements (SRS)", "Design (SDD)", "UML", "Use cases"],
     links: [{ label: "Video presentation", href: "https://www.youtube.com/watch?v=9HVk7uUiCfg" }]
@@ -144,15 +162,17 @@ const projects = [
     cats: ["design"],
     emoji: "🌐",
     blurb: "Data Communication & Networking project: a secure, scalable network for a company headquarters and two branches, built and tested in Cisco Packet Tracer.",
+    challenge: "Connect a multi-floor headquarters and two branch offices so the network is secure today and can grow tomorrow.",
     points: [
       "Multi-floor headquarters (technical, management, server farm, sales) and two branch offices linked over a WAN.",
       "VLSM subnetting for efficient IP allocation with room to grow.",
       "Wired and wireless access, router and switch configuration, and network segmentation for security and performance.",
       "Connectivity tested end to end."
     ],
-    learned: [
-      "How the network under every app is actually put together.",
-      "Planning addressing up front saves pain later."
+    lessons: [
+      { th: "fund", t: "Plan the addressing before plugging anything in", d: "VLSM sizes each subnet to its department, so no address space is wasted and adding a floor later doesn’t mean renumbering." },
+      { th: "sec", t: "Segment to contain problems", d: "Separating departments limits what a compromised or misbehaving machine can reach, and keeps traffic local." },
+      { th: "fund", t: "Know what’s under the app", d: "Every app I build runs on networks like this. Understanding routing and subnets makes deployment problems far less mysterious." }
     ],
     tags: ["Cisco Packet Tracer", "VLSM", "Routing", "Wireless", "Segmentation"],
     links: [{ label: "Video presentation", href: "https://www.youtube.com/watch?v=mCOF6I-53U4" }]
@@ -162,16 +182,19 @@ const projects = [
     title: "FarmIntel: Fruit & Vegetable Disease Detector",
     cats: ["ai"],
     img: "assets/project3.jpg",
-    blurb: "Image classifier that tells healthy produce from diseased produce, from a photo or a live camera feed.",
+    blurb: "Image classifier that tells healthy produce from rotten produce, from a photo or a live camera feed.",
+    challenge: "Checking produce quality by eye is slow, tiring and subjective. Could a model do it consistently from a photo?",
     points: [
-      "Model trained with Teachable Machine and exported to Keras.",
-      "Tkinter desktop GUI with camera input and a history of past predictions."
+      "CNN trained with Teachable Machine on a Kaggle dataset covering 14 kinds of fruit and vegetables, each healthy or rotten.",
+      "Python desktop app with photo and live-camera detection, saving results to a CSV history.",
+      "In the same course: rule-based expert systems using forward chaining."
     ],
-    learned: [
-      "A model is only half the product: it needs a usable interface around it.",
-      "Training data quality matters more than the model."
+    lessons: [
+      { th: "data", t: "The data decides what the model can see", d: "The model can only learn colour change, mould and bruising because the images show them. The variety and labelling of the dataset set the ceiling on what it can learn." },
+      { th: "data", t: "Rules or learning: pick for the problem", d: "Building rule-based expert systems alongside a CNN showed the trade-off: rules are easy to explain, learned models cope with messy real photos." },
+      { th: "users", t: "A model needs a product around it", d: "Camera input and a saved history turned a model file into something a person could actually use." }
     ],
-    tags: ["Python", "Keras", "Tkinter"],
+    tags: ["Python", "Teachable Machine", "Keras", "CNN"],
     links: [
       { label: "GitHub", href: "https://github.com/Mirulfiz04/Fruit-and-Vegetable-Disease-AI-Project" },
       { label: "Report (PDF)", href: "assets/reports/FarmIntel-Fruit & Vegetable Disease Detector Group 28.pdf" }
@@ -180,15 +203,22 @@ const projects = [
   {
     id: "events",
     title: "Event Management System",
-    cats: ["web"],
+    cats: ["design"],
     img: "assets/project4.png",
-    blurb: "Workshop I project: an event management program taken from requirements analysis to a working build with database storage.",
+    blurb: "Workshop I project: a C++ system with a MySQL database for event registration, ticket sales, volunteers and admin reports.",
+    challenge: "Participants queued to buy tickets on paper, and admins had no digital records or reports. Build one central system for participants, volunteers and admins.",
     points: [
-      "Requirements analysis through to a working program.",
-      "Saves event data to a database."
+      "Participant, volunteer and admin modules: registration, login, ticket purchase, event checks and volunteer management.",
+      "Normalised MySQL schema with primary and foreign keys.",
+      "Admin reports with graphs of ticket sales, attendance and participant engagement.",
+      "Input validation (for example a 12-digit IC number) and try/catch around database calls."
     ],
-    learned: ["Going from a written specification to working software, end to end."],
-    tags: ["Python", "C++", "Database"],
+    lessons: [
+      { th: "fund", t: "Know what the computer is actually doing", d: "In C++ I handled the MySQL connection and result sets through pointers myself, which made memory and resource clean-up very real." },
+      { th: "users", t: "Fail with a useful message", d: "Instead of a crash or a cryptic error, bad input gets a clear message such as “IC Number must be 12 digits long!”." },
+      { th: "ship", t: "Delays cascade", d: "My report found that one late phase pushed back every phase after it. My fix for next time: short iterations, buffer time and building the critical features first." }
+    ],
+    tags: ["C++", "MySQL", "SQL", "Data modelling"],
     links: [
       { label: "GitHub", href: "https://github.com/Mirulfiz04/Event-Management-System-workshop1" },
       { label: "Report (PDF)", href: "assets/reports/Final Report AMIRUL HAFIZ BIN ANUAR B032310657.pdf" }
@@ -206,6 +236,12 @@ function toast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1800);
 }
 
+/* ---------- View transitions (animated DOM swaps where supported) ---------- */
+function vt(update) {
+  if (!document.startViewTransition || reduceMotion || document.hidden) return update();
+  document.startViewTransition(update).ready.catch(() => {}); // a skipped transition still runs update
+}
+
 /* ---------- Theme ---------- */
 const sysLight = matchMedia("(prefers-color-scheme: light)");
 const currentTheme = () => root.dataset.theme || (sysLight.matches ? "light" : "dark");
@@ -217,8 +253,7 @@ function setTheme(t) {
 function toggleTheme() {
   const next = currentTheme() === "dark" ? "light" : "dark";
   const swap = () => setTheme(next);
-  if (document.startViewTransition && !reduceMotion) document.startViewTransition(swap);
-  else swap();
+  vt(swap);
   toast(next === "light" ? "☀️ Light mode" : "🌙 Dark mode");
   return next;
 }
@@ -389,6 +424,7 @@ list.innerHTML = projects.map((p) => `
     <div class="p-body">
       <h3>${p.title}</h3>
       <p>${p.blurb}</p>
+      <p class="p-lesson"><span aria-hidden="true">💡</span> <span><small>Taught me</small>${p.lessons[0].t}</span></p>
       <ul class="tags">${p.tags.map((t) => `<li>${t}</li>`).join("")}</ul>
       <button class="p-more" type="button" data-open-project="${p.id}" aria-haspopup="dialog" aria-label="Details: ${p.title}">Details <span aria-hidden="true">→</span></button>
     </div>
@@ -399,8 +435,32 @@ $$(".filters .chip").forEach((chip) => chip.addEventListener("click", () => {
   $$(".filters .chip").forEach((c) => c.setAttribute("aria-pressed", c === chip));
   const f = chip.dataset.filter;
   const apply = () => $$(".p-card").forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
-  if (document.startViewTransition && !reduceMotion) document.startViewTransition(apply); else apply();
+  vt(apply);
 }));
+
+/* ---------- What my projects taught me ---------- */
+const allLessons = projects.flatMap((p) => p.lessons.map((l) => ({ ...l, p })));
+const themeChips = $("#themeChips"), lessonList = $("#lessonList");
+themeChips.innerHTML = [["all", `All <b>${allLessons.length}</b>`], ...Object.entries(themes).map(([k, v]) => [k, `${v} <b>${allLessons.filter((l) => l.th === k).length}</b>`])]
+  .map(([k, label], i) => `<button class="chip" type="button" data-th="${k}" aria-pressed="${i === 0}">${label}</button>`).join("");
+function renderLessons(th) {
+  const show = () => {
+    lessonList.innerHTML = allLessons.filter((l) => th === "all" || l.th === th).map((l, i) => `
+      <button class="lesson card" type="button" data-open-project="${l.p.id}" style="--i:${i}">
+        <span class="l-proj">${l.p.title.split(":")[0]}</span>
+        <b>${l.t}</b>
+        <span class="l-d">${l.d}</span>
+        <span class="l-th">${themes[l.th]}</span>
+      </button>`).join("");
+  };
+  vt(show);
+}
+themeChips.addEventListener("click", (e) => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  $$(".chip", themeChips).forEach((x) => x.setAttribute("aria-pressed", x === c));
+  renderLessons(c.dataset.th);
+});
+renderLessons("all");
 
 const modal = $("#projectModal");
 function openProject(id) {
@@ -410,8 +470,12 @@ function openProject(id) {
     <div class="m-body">
       <h2 id="mTitle">${p.title}</h2>
       <p class="muted">${p.blurb}</p>
+      <h3 class="m-h">🎯 The challenge</h3>
+      <p>${p.challenge}</p>
+      <h3 class="m-h">🛠️ What I built</h3>
       <ul class="points">${p.points.map((x) => `<li>${x}</li>`).join("")}</ul>
-      ${p.learned ? `<div class="m-learned"><h3>💡 What I learned</h3><ul>${p.learned.map((x) => `<li>${x}</li>`).join("")}</ul></div>` : ""}
+      <div class="m-learned"><h3>💡 What it taught me</h3>
+        <ol>${p.lessons.map((l) => `<li><b>${l.t}</b> <span class="th">${themes[l.th]}</span><br />${l.d}</li>`).join("")}</ol></div>
       <ul class="tags">${p.tags.map((t) => `<li>${t}</li>`).join("")}</ul>
       <div class="m-links">${p.links.map((l) => l.href.startsWith("#")
         ? `<a class="btn primary" href="${l.href}" data-close-modal>${l.label} →</a>`
@@ -465,6 +529,7 @@ const cmds = {
   <span class="c">whoami</span>       short intro
   <span class="c">experience</span>   work history
   <span class="c">projects</span>     list projects  ·  <span class="c">open &lt;id&gt;</span> for details
+  <span class="c">lessons</span>      what each project taught me
   <span class="c">skills</span>       tech stack
   <span class="c">education</span>    degrees and results
   <span class="c">contact</span>      how to reach me
@@ -487,6 +552,7 @@ Speaks English, Malay, Japanese and Mandarin (the last two at intermediate level
 web/mobile React · Laravel · Tailwind · Flutter · Supabase
 ai/iot     TensorFlow/Keras · OpenCV · ESP32 · micro:bit · HuskyLens
 tools      Git · GitHub · Figma`,
+  lessons: () => projects.map((p) => `<span class="c">${p.title.split(":")[0]}</span>\n${p.lessons.map((l) => `  · ${l.t}`).join("\n")}`).join("\n"),
   education: () => `BCS (Software Development), UTeM ......... 2023 – now   CGPA 3.62
 Matriculation, KMKPh ..................... 2022 – 2023  CGPA 3.89
 SPM ...................................... 2021         5A 3B 1C`,
@@ -746,7 +812,7 @@ $("#runPipe").addEventListener("click", async () => {
 const pal = $("#palette"), palIn = $("#palInput"), palList = $("#palList");
 const go = (hash) => () => { pal.close(); location.hash = hash; };
 const actions = [
-  ...[["About", "#about"], ["Experience", "#experience"], ["Projects", "#projects"], ["MEDS case study", "#meds"], ["Photos", "#moments"], ["Skills & education", "#skills"], ["Contact", "#contact"]]
+  ...[["About", "#about"], ["Experience", "#experience"], ["Projects", "#projects"], ["What my projects taught me", "#lessons"], ["MEDS case study", "#meds"], ["Photos", "#moments"], ["Skills & education", "#skills"], ["Contact", "#contact"]]
     .map(([t, h]) => ({ t, g: "Go to", run: go(h) })),
   ...projects.map((p) => ({ t: p.title, g: "Project", run: () => { pal.close(); openProject(p.id); } })),
   { t: "Download CV (PDF)", g: "Action", run: () => { pal.close(); printCV(); } },
