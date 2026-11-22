@@ -101,7 +101,7 @@ const projects = [
   {
     id: "clinic",
     title: "Clinic Management System",
-    cats: ["web"],
+    cats: ["design"],
     emoji: "🏥",
     blurb: "Distributed-applications project: Java Swing desktop clients for patients and doctors, talking to a REST server over HTTP.",
     points: [
@@ -114,7 +114,48 @@ const projects = [
       "Keeping clients thin and putting the rules on the server."
     ],
     tags: ["Java", "Swing", "REST", "MySQL", "JSON"],
-    links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/Project-DAD" }]
+    links: [
+      { label: "Video demo", href: "https://www.youtube.com/watch?v=BMUybOm3Q04" },
+      { label: "GitHub", href: "https://github.com/Mirulfiz04/Project-DAD" }
+    ]
+  },
+  {
+    id: "sims",
+    title: "SIMS: Smart Inventory Management System",
+    cats: ["design"],
+    emoji: "📦",
+    blurb: "Software Requirement & Design project: the full specification and design of an inventory system for small and medium retail businesses.",
+    points: [
+      "Problem: manual stock tracking causes errors, stockouts and overstocking.",
+      "Functional requirements: authentication, real-time tracking by barcode or RFID, low-stock alerts, automatic purchase orders and a sales analytics dashboard.",
+      "Non-functional requirements: 50+ concurrent users, AES-256 encryption, role-based access control and 99% uptime.",
+      "Use case model with 5 actors (store manager, warehouse staff, supplier, business owner, IT) and 6 use cases."
+    ],
+    learned: [
+      "Writing requirements that are specific and testable, not vague wishes.",
+      "Modelling who does what before writing any code."
+    ],
+    tags: ["Requirements (SRS)", "Design (SDD)", "UML", "Use cases"],
+    links: [{ label: "Video presentation", href: "https://www.youtube.com/watch?v=9HVk7uUiCfg" }]
+  },
+  {
+    id: "network",
+    title: "Enterprise Network Design",
+    cats: ["design"],
+    emoji: "🌐",
+    blurb: "Data Communication & Networking project: a secure, scalable network for a company headquarters and two branches, built and tested in Cisco Packet Tracer.",
+    points: [
+      "Multi-floor headquarters (technical, management, server farm, sales) and two branch offices linked over a WAN.",
+      "VLSM subnetting for efficient IP allocation with room to grow.",
+      "Wired and wireless access, router and switch configuration, and network segmentation for security and performance.",
+      "Connectivity tested end to end."
+    ],
+    learned: [
+      "How the network under every app is actually put together.",
+      "Planning addressing up front saves pain later."
+    ],
+    tags: ["Cisco Packet Tracer", "VLSM", "Routing", "Wireless", "Segmentation"],
+    links: [{ label: "Video presentation", href: "https://www.youtube.com/watch?v=mCOF6I-53U4" }]
   },
   {
     id: "farmintel",
@@ -524,14 +565,42 @@ function printCV() {
 }
 $$("[data-print-cv]").forEach((b) => b.addEventListener("click", printCV));
 
-/* ---------- Photo lightbox ---------- */
+/* ---------- Moments: polaroid strip + lightbox ---------- */
+const moments = [
+  { src: "assets/gallery/cip2026-workshop.jpg", date: "May 2026", cap: "Cabaran Inspirasi Inovasi Pintar 2026 at SMK Intan Perdana: students training their own image models in Teachable Machine", alt: "School hall at SMK Intan Perdana with Teachable Machine projected on the screen and students working on laptops" },
+  { src: "assets/gallery/cip2026-donation.jpg", date: "May 2026", cap: "45 micro:bit + 45 Arduino units handed over for the programme (UTeM × onsemi × PPD Port Dickson)", alt: "Projected slide: Sumbangan Peralatan Pendidikan, 45 unit micro:bit, 45 unit Arduino, Bengkel dan Cabaran Inovasi Pintar Daerah Port Dickson 2026" },
+  { src: "assets/gallery/deans-award-cert.jpg", date: "Sem I 2025/2026", cap: "Dean’s List certificate, one of five in a row", alt: "Dean's Award certificate for Amirul Hafiz bin Anuar, Bachelor of Computer Science (Software Development), Semester I Session 2025/2026" },
+  { src: "assets/gallery/workshop2-award.jpg", date: "Jan 2026", cap: "Best Project Award + challenge trophy, FTMK Workshop II Innovation Competition (iPetro)", alt: "Certificate of Excellence from iPetro Services Sdn Bhd for the Best Project Award, held next to a gold trophy" },
+  { src: "assets/gallery/2.jpg", date: "Jun 2025", cap: "Receiving my Dean’s Award on stage at UTeM", alt: "Amirul receiving his Dean’s Award certificate on stage at UTeM" },
+  { src: "assets/gallery/3.jpg", date: "", cap: "Project review with our lecturer", alt: "Amirul and teammates reviewing a project with their lecturer" },
+  { src: "assets/gallery/1.jpg", date: "", cap: "Team walkthrough of a system", alt: "Amirul's team walking through a system on a desktop monitor in a meeting room" },
+  { src: "assets/gallery/4.jpg", date: "", cap: "Beyond Unity database project, presented online", alt: "Online presentation of the Beyond Unity database project poster" }
+];
+const strip = $("#momentList");
+strip.innerHTML = moments.map((m, i) => `<button class="moment" type="button" data-i="${i}" style="--tilt:${[-3, 2, -1.5, 3, -2.5][i % 5]}deg">
+  <img src="${m.src}" alt="${m.alt}" loading="lazy" />
+  <span class="m-cap">${m.cap}${m.date ? `<small>${m.date}</small>` : ""}</span></button>`).join("");
+// drag to scroll on desktop (touch already scrolls natively)
+let drag = null;
+strip.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse") drag = { x: e.clientX, left: strip.scrollLeft, moved: false }; });
+addEventListener("pointermove", (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 5) drag.moved = true; strip.scrollLeft = drag.left - dx; });
+addEventListener("pointerup", () => setTimeout(() => (drag = null), 0));
 const lb = $("#lightbox");
-$$(".moment").forEach((m) => m.addEventListener("click", () => {
-  const img = $("img", m);
-  $("#lbImg").src = m.dataset.full; $("#lbImg").alt = img.alt;
-  $("#lbCap").textContent = $("span", m).textContent;
-  lb.showModal();
-}));
+let lbI = 0;
+function showMoment(i) {
+  lbI = (i + moments.length) % moments.length;
+  const m = moments[lbI];
+  $("#lbImg").src = m.src; $("#lbImg").alt = m.alt;
+  $("#lbCap").textContent = `${m.cap}${m.date ? ` · ${m.date}` : ""}  (${lbI + 1}/${moments.length})`;
+}
+strip.addEventListener("click", (e) => {
+  const b = e.target.closest(".moment");
+  if (!b || drag?.moved) return;
+  showMoment(+b.dataset.i); lb.showModal(); unlock("photo");
+});
+$("#lbPrev").addEventListener("click", () => showMoment(lbI - 1));
+$("#lbNext").addEventListener("click", () => showMoment(lbI + 1));
+lb.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") showMoment(lbI - 1); if (e.key === "ArrowRight") showMoment(lbI + 1); });
 lb.addEventListener("click", (e) => { if (e.target === lb || e.target.id === "lbImg") lb.close(); });
 
 /* ---------- Live GitHub activity (public API, cached per session) ---------- */
@@ -615,7 +684,6 @@ $("#resetBadges").addEventListener("click", () => { got = []; try { localStorage
 // hook the badges into what already exists
 $("#themeBtn").addEventListener("click", () => unlock("theme"));
 $$("[data-open-term]").forEach((b) => b.addEventListener("click", () => unlock("terminal")));
-$$(".moment").forEach((m) => m.addEventListener("click", () => unlock("photo")));
 helloEl.addEventListener("click", () => unlock("polyglot"));
 new MutationObserver(() => { if (term.open) unlock("terminal"); }).observe(term, { attributes: true, attributeFilter: ["open"] });
 const _confetti = confetti;

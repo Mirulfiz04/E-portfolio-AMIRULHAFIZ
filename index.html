@@ -10,7 +10,7 @@
   <meta property="og:url" content="https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ/" />
   <meta property="og:title" content="Amirul Hafiz — Software Engineer" />
   <meta property="og:description" content="Full-stack, mobile and applied AI. Software Engineer intern at AirDroiTech, CS (Software Development) at UTeM." />
-  <meta property="og:image" content="https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ/assets/avatar.png" />
+  <meta property="og:image" content="https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ/assets/portrait.jpg" />
   <meta name="twitter:card" content="summary" />
   <script type="application/ld+json">
   {
@@ -24,7 +24,7 @@
     "email": "mailto:amirul.hafiz73@gmail.com",
     "knowsLanguage": ["en", "ms", "ja", "zh"],
     "knowsAbout": ["Software Engineering", "Flutter", "React", "Laravel", "TensorFlow", "IoT"],
-    "sameAs": ["https://github.com/Mirulfiz04", "https://www.linkedin.com/in/mirulfiz040428/"]
+    "sameAs": ["https://github.com/Mirulfiz04", "https://www.linkedin.com/in/mirulfiz040428/", "https://www.youtube.com/@snowice3241"]
   }
   </script>
   <meta name="theme-color" content="#0b0d12" />
@@ -118,7 +118,7 @@
     <section class="section wrap" id="about">
       <div class="about-grid">
         <div class="photo reveal">
-          <img src="assets/avatar.png" alt="Portrait of Amirul Hafiz" width="405" height="460" loading="lazy" />
+          <img src="assets/portrait.jpg" alt="Portrait of Amirul Hafiz in a suit and tie" width="810" height="920" loading="lazy" />
         </div>
         <div class="reveal">
           <p class="eyebrow">01 · About</p>
@@ -151,7 +151,7 @@
           <span class="t-date mono">May – Jul 2026</span>
           <div class="card t-card">
             <h3>Student Research Assistant <span class="at">@ UTeM</span></h3>
-            <p>Ran micro:bit, IoT and HuskyLens workshops for <b>Cabaran Inspirasi Inovasi Pintar 2026</b> with onsemi and PPD Port Dickson. Mentored 2 secondary school teams, and <b>both finished Top 3 at state level</b>.</p>
+            <p>Ran micro:bit, IoT and HuskyLens workshops for <b>Cabaran Inspirasi Inovasi Pintar 2026</b> with onsemi and PPD Port Dickson. Mentored 2 secondary school teams, and <b>both finished Top 3 at state level</b>. The programme also put 45 micro:bit and 45 Arduino units into local schools.</p>
           </div>
         </li>
         <li class="t-item reveal">
@@ -162,10 +162,10 @@
           </div>
         </li>
         <li class="t-item reveal">
-          <span class="t-date mono">Workshop II</span>
+          <span class="t-date mono">Jan 2026</span>
           <div class="card t-card">
-            <h3>Gold Award + Best Project Award</h3>
-            <p>Workshop II Innovation Competition, for the iPetro Visual Inspection Report System, which I led as team leader.</p>
+            <h3>Gold Award + Best Project Award <span class="at">@ FTMK Workshop II Innovation Competition</span></h3>
+            <p>Best Project Award from industry partner <b>iPetro Services Sdn Bhd</b> for our case study “From Inspection Photo to Visual Inspection Report”, the iPetro system I led as team leader. <a href="#moments" class="proof">See the certificate →</a></p>
           </div>
         </li>
         <li class="t-item reveal">
@@ -188,6 +188,7 @@
           <button class="chip" type="button" aria-pressed="false" data-filter="ai">AI / IoT</button>
           <button class="chip" type="button" aria-pressed="false" data-filter="web">Web</button>
           <button class="chip" type="button" aria-pressed="false" data-filter="mobile">Mobile</button>
+          <button class="chip" type="button" aria-pressed="false" data-filter="design">Systems &amp; design</button>
         </div>
       </div>
       <div class="projects" id="projectList"><!-- rendered by js/script.js --></div>
@@ -297,24 +298,8 @@
     <section class="section wrap" id="moments">
       <p class="eyebrow reveal">Moments</p>
       <h2 class="reveal">Off the screen.</h2>
-      <div class="moments">
-        <button class="moment big reveal" type="button" data-full="assets/gallery/2.jpg">
-          <img src="assets/gallery/2.jpg" alt="Amirul receiving his Dean’s Award certificate on stage at UTeM" loading="lazy" width="1080" height="608" />
-          <span>Receiving the Dean’s Award at UTeM, June 2025</span>
-        </button>
-        <button class="moment reveal" type="button" data-full="assets/gallery/3.jpg">
-          <img src="assets/gallery/3.jpg" alt="Amirul and teammates reviewing a project with their lecturer" loading="lazy" width="1080" height="607" />
-          <span>Project review with our lecturer</span>
-        </button>
-        <button class="moment reveal" type="button" data-full="assets/gallery/1.jpg">
-          <img src="assets/gallery/1.jpg" alt="Amirul's team walking through a system on a desktop monitor in a meeting room" loading="lazy" width="810" height="754" />
-          <span>Team walkthrough of a system</span>
-        </button>
-        <button class="moment reveal" type="button" data-full="assets/gallery/4.jpg">
-          <img src="assets/gallery/4.jpg" alt="Online presentation of the Beyond Unity database project poster" loading="lazy" width="1080" height="477" />
-          <span>Beyond Unity database project, presented online</span>
-        </button>
-      </div>
+      <p class="muted small reveal">Drag or scroll sideways · click a photo to open it.</p>
+      <div class="moments" id="momentList" tabindex="0" aria-label="Photos"><!-- rendered by js/script.js --></div>
     </section>
 
     <!-- SKILLS -->
@@ -352,6 +337,7 @@
         <div class="socials">
           <a href="https://github.com/Mirulfiz04" target="_blank" rel="noopener">GitHub ↗</a>
           <a href="https://www.linkedin.com/in/mirulfiz040428/" target="_blank" rel="noopener">LinkedIn ↗</a>
+          <a href="https://www.youtube.com/@snowice3241" target="_blank" rel="noopener">YouTube ↗</a>
         </div>
       </div>
     </section>
@@ -393,6 +379,8 @@
   <dialog class="lightbox" id="lightbox" aria-label="Photo">
     <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
     <img id="lbImg" alt="" />
+    <button class="icon-btn lb-nav prev" id="lbPrev" type="button" aria-label="Previous photo">←</button>
+    <button class="icon-btn lb-nav next" id="lbNext" type="button" aria-label="Next photo">→</button>
     <p id="lbCap"></p>
   </dialog>
 

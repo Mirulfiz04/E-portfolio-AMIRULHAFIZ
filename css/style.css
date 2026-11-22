@@ -303,18 +303,20 @@ dialog[open] { animation: rise 0.35s var(--ease); }
 .gh-meta i { width: 10px; height: 10px; border-radius: 50%; }
 
 /* ===== Moments ===== */
-.moments { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: repeat(2, 200px); gap: 14px; margin-top: 28px; }
-.moment { position: relative; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: zoom-in; background: var(--surface); }
-.moment.big { grid-row: span 2; }
-.moment:nth-child(4) { grid-column: span 2; }
-.moment img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease), filter 0.4s; }
-.moment:hover img { transform: scale(1.05); }
-.moment span { position: absolute; inset: auto 0 0; padding: 28px 14px 12px; font-size: 0.85rem; text-align: left; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, 0.75)); transform: translateY(6px); opacity: 0.9; transition: transform 0.3s var(--ease), opacity 0.3s; }
-.moment:hover span, .moment:focus-visible span { transform: none; opacity: 1; }
+.moments { display: flex; gap: 22px; margin: 20px -16px 0; padding: 24px 16px 32px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; cursor: grab; }
+.moments:active { cursor: grabbing; }
+.moment { flex: none; width: min(340px, 78vw); scroll-snap-align: start; padding: 12px 12px 0; background: #fbfaf7; border: 0; border-radius: 6px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); transform: rotate(var(--tilt, 0deg)); transition: transform 0.35s var(--ease), box-shadow 0.35s; cursor: zoom-in; }
+.moment:hover, .moment:focus-visible { transform: rotate(0) translateY(-8px) scale(1.03); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35); }
+.moment img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 2px; pointer-events: none; }
+.m-cap { display: block; padding: 10px 4px 14px; font: 500 0.88rem/1.35 var(--font); color: #222; text-align: left; }
+.m-cap small { display: block; margin-top: 2px; font: 0.75rem var(--mono); color: #777; }
 .lightbox { width: min(1000px, 100% - 32px); background: var(--bg-2); }
 .lightbox img { width: 100%; max-height: 78vh; object-fit: contain; background: #000; cursor: zoom-out; }
 .lightbox p { margin: 0; padding: 12px 18px; color: var(--muted); }
 .lightbox .close { position: absolute; top: 10px; right: 10px; background: var(--bg); }
+.lb-nav { position: absolute; top: 40%; background: var(--bg); }
+.lb-nav.prev { left: 10px; }
+.lb-nav.next { right: 10px; }
 
 /* ===== Project modal: what I learned ===== */
 .m-learned { margin: 16px 0; padding: 14px 16px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
@@ -409,10 +411,6 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .nav.open { display: flex; animation: rise 0.25s var(--ease); }
   .nav a { padding: 12px; font-size: 1.05rem; }
   .nav a::after { left: 12px; right: auto; width: 24px; }
-  .moments { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
-  .moment.big, .moment:nth-child(4) { grid-column: span 2; grid-row: auto; }
-  .moment { aspect-ratio: 4 / 3; }
-  .moment.big, .moment:nth-child(4) { aspect-ratio: 16 / 9; }
   body { font-size: 16px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .projects { grid-template-columns: 1fr; }
@@ -433,7 +431,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   :root, :root[data-theme] { --bg: #fff; --bg-2: #fff; --surface: #fff; --surface-2: #f3f4f6; --border: #d1d5db; --text: #111; --muted: #444; --accent: #006b55; --accent-2: #333; --accent-ink: #fff; color-scheme: light; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
   body { font-size: 10.5pt; line-height: 1.45; background: #fff; }
-  .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
+  .proof, .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
   .print-head { display: block; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 2px solid #006b55; }
   .print-head h1 { font-size: 20pt; margin: 0 0 2px; }
   .print-head p { margin: 0; font-size: 9.5pt; color: #333; }
