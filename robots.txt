@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ/sitemap.xml

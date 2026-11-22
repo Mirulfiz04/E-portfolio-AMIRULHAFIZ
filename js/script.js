@@ -23,7 +23,7 @@ const projects = [
       "Design paper presented at ISIRA 2026."
     ],
     tags: ["Flutter", "TensorFlow", "Keras", "OpenCV", "ESP32", "Supabase"],
-    links: []
+    links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/MEDS" }]
   },
   {
     id: "ipetro",
@@ -38,7 +38,7 @@ const projects = [
       "Won the Gold Award and the Best Project Award at the Workshop II Innovation Competition."
     ],
     tags: ["React", "TypeScript", "Laravel", "Tailwind"],
-    links: [{ label: "GitHub", href: "https://github.com/Haikal097/IPetro-Visual-Inspection-Report" }]
+    links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/WORKSHOP2_IPETRO-VISUAL-INSPECTION" }]
   },
   {
     id: "nanadash",
@@ -359,6 +359,9 @@ const cmds = {
   <span class="c">skills</span>       tech stack
   <span class="c">education</span>    degrees and results
   <span class="c">contact</span>      how to reach me
+  <span class="c">github</span>       latest repos (live)
+  <span class="c">cv</span>           save my CV as PDF
+  <span class="c">hello</span>        say hi in 4 languages
   <span class="c">theme</span>        toggle light/dark
   <span class="c">clear</span>        clear the screen
   <span class="c">exit</span>         back to the normal site`,
@@ -388,14 +391,14 @@ linkedin  <a href="https://www.linkedin.com/in/mirulfiz040428/" target="_blank" 
   clear: () => { out.innerHTML = ""; return null; },
   exit: () => { term.close(); return null; }
 };
-function run(raw) {
+async function run(raw) {
   const line = raw.trim();
   print(`<span class="c">$</span> ${esc(line)}`);
   if (!line) return;
   hist.push(line); hIdx = hist.length;
   const [name, ...rest] = line.split(/\s+/);
-  const fn = cmds[name.toLowerCase()];
-  const res = fn ? fn(rest.join(" ").toLowerCase()) : `${esc(name)}: command not found. Type <span class="c">help</span>.`;
+  const fn = Object.hasOwn(cmds, name.toLowerCase()) && cmds[name.toLowerCase()];
+  const res = fn ? await fn(rest.join(" ").toLowerCase()) : `${esc(name)}: command not found. Type <span class="c">help</span>.`;
   if (res) print(res);
 }
 function openTerm() {
@@ -420,6 +423,93 @@ $$("[data-open-term]").forEach((b) => b.addEventListener("click", openTerm));
 document.addEventListener("keydown", (e) => {
   const typing = /INPUT|TEXTAREA/.test(document.activeElement.tagName);
   if (e.key === "`" && !typing && !modal.open) { e.preventDefault(); term.open ? term.close() : openTerm(); }
+});
+
+/* ---------- Multilingual "Hi" (he speaks all four) ---------- */
+const hellos = [["Hi", "English"], ["Hai", "Malay"], ["こんにちは", "Japanese"], ["你好", "Mandarin"]];
+const helloEl = $("#hello");
+let hi = 0;
+function nextHello() {
+  hi = (hi + 1) % hellos.length;
+  const [word, lang] = hellos[hi];
+  helloEl.classList.remove("flip"); void helloEl.offsetWidth; helloEl.classList.add("flip");
+  helloEl.textContent = word;
+  helloEl.title = lang;
+  return `${word}  <span class="d">(${lang})</span>`;
+}
+helloEl.addEventListener("click", () => { const [, lang] = hellos[(hi + 1) % hellos.length]; nextHello(); toast(`👋 ${lang}`); });
+if (!reduceMotion) setInterval(() => { if (document.activeElement !== helloEl) nextHello(); }, 4000);
+
+/* ---------- Mobile menu ---------- */
+const menuBtn = $("#menuBtn"), nav = $("#nav");
+function setMenu(open) { nav.classList.toggle("open", open); menuBtn.setAttribute("aria-expanded", open); }
+menuBtn.addEventListener("click", () => setMenu(!nav.classList.contains("open")));
+nav.addEventListener("click", (e) => { if (e.target.closest("a")) setMenu(false); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && nav.classList.contains("open")) { setMenu(false); menuBtn.focus(); } });
+
+/* ---------- CV: the print stylesheet turns the page into a résumé ---------- */
+addEventListener("beforeprint", () => $$(".reveal").forEach((el) => el.classList.add("in")));
+function printCV() {
+  $$("dialog[open]").forEach((d) => d.close());
+  toast("Choose “Save as PDF” in the print dialog");
+  setTimeout(() => print(), 300);
+}
+$$("[data-print-cv]").forEach((b) => b.addEventListener("click", printCV));
+
+/* ---------- Photo lightbox ---------- */
+const lb = $("#lightbox");
+$$(".moment").forEach((m) => m.addEventListener("click", () => {
+  const img = $("img", m);
+  $("#lbImg").src = m.dataset.full; $("#lbImg").alt = img.alt;
+  $("#lbCap").textContent = $("span", m).textContent;
+  lb.showModal();
+}));
+lb.addEventListener("click", (e) => { if (e.target === lb || e.target.id === "lbImg") lb.close(); });
+
+/* ---------- Live GitHub activity (public API, cached per session) ---------- */
+const ago = (d) => {
+  const days = Math.floor((Date.now() - new Date(d)) / 864e5);
+  return days < 1 ? "today" : days === 1 ? "yesterday" : days < 30 ? `${days} days ago` : days < 365 ? `${Math.floor(days / 30)} mo ago` : `${Math.floor(days / 365)} yr ago`;
+};
+const langColor = { Dart: "#00b4ab", TypeScript: "#3178c6", PHP: "#777bb4", Java: "#b07219", CSS: "#663399", Python: "#3572a5", JavaScript: "#f1e05a" };
+let repos = [];
+async function loadRepos() {
+  try {
+    const cached = sessionStorage.getItem("gh-repos");
+    if (cached) return JSON.parse(cached);
+  } catch (e) {}
+  const res = await fetch("https://api.github.com/users/Mirulfiz04/repos?sort=pushed&per_page=30");
+  if (!res.ok) throw new Error(res.status);
+  const list = (await res.json())
+    .filter((r) => !r.fork && !/^(gitclass|e-portfolio-assignment)$/i.test(r.name))
+    .slice(0, 6)
+    .map(({ name, html_url, language, pushed_at, description }) => ({ name, html_url, language, pushed_at, description }));
+  try { sessionStorage.setItem("gh-repos", JSON.stringify(list)); } catch (e) {}
+  return list;
+}
+// only fetch once the section is near the viewport
+new IntersectionObserver(async ([e], obs) => {
+  if (!e.isIntersecting) return;
+  obs.disconnect();
+  try {
+    repos = await loadRepos();
+    if (!repos.length) return;
+    $("#ghList").innerHTML = repos.map((r) => `<li><a href="${r.html_url}" target="_blank" rel="noopener">
+      <b>${esc(r.name)}</b>
+      <span class="gh-meta">${r.language ? `<i style="background:${langColor[r.language] || "var(--muted)"}"></i>${r.language} · ` : ""}updated ${ago(r.pushed_at)}</span></a></li>`).join("");
+    $("#ghActivity").hidden = false;
+    $("#ghActivity").classList.add("in");
+  } catch (err) { /* API down or rate-limited: the section just stays hidden */ }
+}, { rootMargin: "400px" }).observe($("#projects"));
+
+Object.assign(cmds, {
+  hello: () => nextHello(),
+  cv: () => { setTimeout(printCV, 400); return "Opening print dialog… choose “Save as PDF”."; },
+  resume: () => cmds.cv(),
+  github: async () => {
+    try { repos = repos.length ? repos : await loadRepos(); } catch { return `Couldn’t reach GitHub. Visit <a href="https://github.com/Mirulfiz04" target="_blank" rel="noopener">github.com/Mirulfiz04</a>`; }
+    return repos.map((r) => `<span class="c">${esc(r.name).padEnd(36)}</span> ${(r.language || "").padEnd(11)} <span class="d">${ago(r.pushed_at)}</span>`).join("\n");
+  }
 });
 
 // friendly hello for the curious ones
