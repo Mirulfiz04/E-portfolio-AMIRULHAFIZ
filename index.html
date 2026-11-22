@@ -48,11 +48,13 @@
       <a href="#about">About</a>
       <a href="#experience">Experience</a>
       <a href="#projects">Projects</a>
+      <a href="#meds">MEDS</a>
       <a href="#skills">Skills</a>
       <a href="#contact">Contact</a>
     </nav>
     <div class="actions">
       <button class="btn cv-btn" type="button" data-print-cv>Download CV</button>
+      <button class="icon-btn kbd-btn" type="button" data-open-palette aria-label="Search and jump (Ctrl or Command + K)" title="Search · ⌘K / Ctrl K"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
       <button class="icon-btn mono" id="termBtn" type="button" data-open-term aria-label="Open terminal mode" title="Terminal mode (press `)">&gt;_</button>
       <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light and dark theme" title="Toggle theme">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -106,7 +108,7 @@
               <svg class="ecg" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"><polyline id="ecg" points="" /></svg></div>
             <div><span class="muted">SpO₂</span><b><span id="medsSpo2">98</span><small>%</small></b></div>
           </div>
-          <p class="meds-foot muted">CNN on FER2013 + ESP32/MAX30102 vitals → Flutter + Supabase. <a href="#projects" data-open-project="meds">Read more</a></p>
+          <p class="meds-foot muted">CNN on FER2013 + ESP32/MAX30102 vitals → Flutter + Supabase. <a href="#meds">Read the case study</a></p>
         </aside>
       </div>
       <a class="scroll-hint" href="#about" aria-label="Scroll to About"><span></span></a>
@@ -198,6 +200,99 @@
       </div>
     </section>
 
+    <!-- MEDS CASE STUDY -->
+    <section class="section wrap" id="meds">
+      <p class="eyebrow reveal">Case study · final-year project</p>
+      <h2 class="reveal" data-cv="MEDS case study">How I built MEDS, and what it taught me.</h2>
+      <p class="lead reveal">MEDS reads emotion from three signals: your face through the camera, your heart rate from a wearable sensor, and your voice. One Flutter app, a secure Supabase backend, two on-device ML models, and a CI/CD pipeline that tests and ships every change.</p>
+      <ul class="cs-stats reveal" aria-label="MEDS in numbers">
+        <li><b>~37k</b><span>lines of Dart</span></li>
+        <li><b>20</b><span>Flutter test files</span></li>
+        <li><b>2</b><span>on-device models</span></li>
+        <li><b>6</b><span>automated CI/CD jobs</span></li>
+      </ul>
+
+      <div class="cs card reveal">
+        <div class="tabs" role="tablist" aria-label="MEDS case study">
+          <button role="tab" id="t-arch" aria-controls="p-arch" aria-selected="true">Architecture</button>
+          <button role="tab" id="t-ci" aria-controls="p-ci" aria-selected="false" tabindex="-1">CI/CD</button>
+          <button role="tab" id="t-sec" aria-controls="p-sec" aria-selected="false" tabindex="-1">Security</button>
+          <button role="tab" id="t-ml" aria-controls="p-ml" aria-selected="false" tabindex="-1">ML</button>
+          <button role="tab" id="t-learn" aria-controls="p-learn" aria-selected="false" tabindex="-1">What I learned</button>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-arch" aria-labelledby="t-arch">
+          <p class="muted small">Hover or tap a part to see what it does.</p>
+          <div class="arch" id="arch">
+            <button class="node" data-k="sensor"><span>⌚</span>ESP32 + MAX30102</button>
+            <button class="node" data-k="app"><span>📱</span>Flutter app</button>
+            <button class="node" data-k="ml"><span>🧠</span>On-device TFLite</button>
+            <button class="node" data-k="supa"><span>🗄️</span>Supabase<br /><small>Auth · Postgres · RLS</small></button>
+            <button class="node" data-k="edge"><span>⚡</span>Edge Functions</button>
+            <button class="node" data-k="claude"><span>✨</span>Claude API</button>
+          </div>
+          <p class="arch-info" id="archInfo" aria-live="polite">The ESP32 reads heart rate and SpO₂ and serves them over its own Wi-Fi hotspot. The app polls it, and a native Android channel pins that request to Wi-Fi so it still works while mobile data carries the internet.</p>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-ci" aria-labelledby="t-ci" hidden>
+          <p class="muted small">GitHub Actions. Every pull request runs CI; every merge to <code>main</code> also delivers.</p>
+          <div class="pipe" id="pipe">
+            <div class="stage"><span class="stage-name">CI · in parallel</span>
+              <div class="job" data-job="flutter">Flutter analyze + tests</div>
+              <div class="job" data-job="python">Training-script self-checks</div>
+              <div class="job" data-job="deno">Edge Functions type check</div>
+              <div class="job exp" data-job="ios">iOS compile check <small>(allowed to fail)</small></div>
+            </div>
+            <div class="stage"><span class="stage-name">CD · only if CI is green</span>
+              <div class="job" data-job="apk">Build release APK</div>
+              <div class="job" data-job="deploy">Deploy Edge Functions</div>
+            </div>
+          </div>
+          <button class="btn primary" type="button" id="runPipe">▶ Run pipeline</button>
+          <ul class="points">
+            <li>Flutter is pinned to one version so CI builds exactly what I build locally.</li>
+            <li>The Supabase CLI is pinned too. "latest" hit the GitHub API rate limit and broke a deploy, so I pinned a version that had deployed cleanly.</li>
+            <li>Secrets live in GitHub Actions secrets, never in the repo. The deploy job skips with a warning when the token is missing.</li>
+          </ul>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-sec" aria-labelledby="t-sec" hidden>
+          <p><b>Rule I designed around: the app is not trusted.</b> The publishable key ships inside every APK, so anyone can call the API directly. Every rule that matters lives in the database or in an Edge Function.</p>
+          <ul class="points">
+            <li><b>Privilege escalation fixed.</b> A trigger stops users changing their own <code>role</code> or <code>status</code>, so nobody can make themselves admin.</li>
+            <li><b>Blocking is real.</b> Blocking a user in the admin panel now bans the account in Supabase Auth too, instead of only hiding the app’s start screen.</li>
+            <li><b>Faster policies.</b> I rewrote RLS policies so <code>auth.uid()</code> runs once per query instead of once per row, and merged overlapping policies.</li>
+            <li><b>Indexes that match real queries</b>, such as a user’s sessions sorted newest first.</li>
+            <li><b>Abuse limits.</b> 30 AI calls and 10 emails per user per hour, counted in Postgres, with a 429 response above the limit.</li>
+            <li>The Claude API key stays server-side in an Edge Function. Security tests run against the live policies.</li>
+          </ul>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-ml" aria-labelledby="t-ml" hidden>
+          <ul class="points">
+            <li><b>Found and fixed data leakage.</b> My FER2013 copy merged several downloads, and about 75% of its test images also appeared in training. I wrote a script that dedupes faces and drops every test face from training, so the reported accuracy is honest.</li>
+            <li><b>Transfer learning</b> on MobileNetV2 / V3, exported to TFLite and run on the phone, fed 224×224 face crops from ML Kit.</li>
+            <li><b>Personalisation.</b> A webcam burst tool captures my own faces per emotion; they’re aligned with MediaPipe and split by capture order, so the test set holds photos the model has never seen.</li>
+            <li><b>Fusion.</b> Face probabilities are smoothed over frames, then heart-rate change from a per-session baseline nudges them as an arousal signal, with hysteresis so the label doesn’t flicker. HR corroborates the face but never overrides a confident reading.</li>
+            <li><b>Voice check-in.</b> A second model trained on RAVDESS and CREMA-D, tested on speakers it never heard, blends in for 20 seconds after you answer “Are you OK?”.</li>
+            <li>Training reports a confusion matrix, per-class F1, top-2 accuracy and ROC-AUC.</li>
+          </ul>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-learn" aria-labelledby="t-learn" hidden>
+          <ol class="learn">
+            <li><b>Measure honestly before you optimise.</b> A score measured on leaked test data looks great and means nothing. Fixing the split made the number trustworthy.</li>
+            <li><b>Security belongs on the server.</b> A check that exists only in Dart is a convenience, not security.</li>
+            <li><b>Automate the boring, risky parts.</b> CI catches breakages on every PR; CD means a merge is a release.</li>
+            <li><b>Pin what you depend on.</b> “latest” is a moving target that can break a build on a quiet day.</li>
+            <li><b>Write the docs as you go.</b> Backend, AI and training guides mean the next person (or future me) can run it.</li>
+            <li><b>Know the limits.</b> I listed what isn’t done yet: batched writes, data retention, staging, and SQL migrations in CI.</li>
+          </ol>
+        </div>
+      </div>
+      <p class="reveal"><a class="btn" href="https://github.com/Mirulfiz04/MEDS" target="_blank" rel="noopener">View MEDS on GitHub ↗</a></p>
+    </section>
+
     <!-- MOMENTS -->
     <section class="section wrap" id="moments">
       <p class="eyebrow reveal">Moments</p>
@@ -271,6 +366,27 @@
   <dialog class="modal" id="projectModal" aria-labelledby="mTitle">
     <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
     <div id="mBody"></div>
+  </dialog>
+
+  <!-- COMMAND PALETTE -->
+  <dialog class="palette" id="palette" aria-label="Search and jump">
+    <div class="pal-in">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="palInput" placeholder="Search sections, projects, actions…" role="combobox" aria-expanded="true" aria-controls="palList" aria-autocomplete="list" autocomplete="off" spellcheck="false" />
+      <kbd>esc</kbd>
+    </div>
+    <ul id="palList" role="listbox" aria-label="Results"></ul>
+    <p class="pal-foot muted"><kbd>↑</kbd><kbd>↓</kbd> to move · <kbd>↵</kbd> to open</p>
+  </dialog>
+
+  <!-- ACHIEVEMENTS -->
+  <button class="trophy" id="trophy" type="button" aria-label="Achievements"><span aria-hidden="true">🏆</span> <b id="trophyCount">0/9</b></button>
+  <dialog class="badges-dlg" id="badges" aria-labelledby="bTitle">
+    <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
+    <h2 id="bTitle">Achievements</h2>
+    <p class="muted small">Unlock them by exploring the site. They’re saved in your browser only.</p>
+    <ul class="badge-list" id="badgeList"></ul>
+    <button class="btn ghost small" type="button" id="resetBadges">Reset</button>
   </dialog>
 
   <!-- PHOTO LIGHTBOX -->

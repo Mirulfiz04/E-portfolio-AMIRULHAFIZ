@@ -15,15 +15,24 @@ const projects = [
     featured: true,
     emoji: "🧠💓",
     award: "Paper @ ISIRA 2026",
-    blurb: "Final-year project. It combines facial emotion recognition with heart rate and SpO₂ from a wearable sensor, so the reading rests on more than one signal.",
+    blurb: "Final-year project. Reads emotion from face, heart rate and voice, with a hardened Supabase backend and a CI/CD pipeline that tests and ships every change.",
     points: [
-      "CNN trained on the FER2013 dataset for facial emotion classification (TensorFlow/Keras, OpenCV).",
-      "ESP32 + MAX30102 sensor streams heart rate and SpO₂ as a physiological signal.",
-      "Flutter mobile app backed by Supabase brings both signals together for the user.",
+      "Flutter app with an on-device TFLite face-emotion model (MobileNet transfer learning) and a voice-emotion model for an “Are you OK?” check-in.",
+      "ESP32 + MAX30102 sends heart rate and SpO₂; late fusion uses HR change as an arousal signal, with smoothing and hysteresis.",
+      "Supabase backend: Auth, Postgres with Row Level Security, and Edge Functions for Claude-powered session summaries and email export, with per-user rate limits.",
+      "GitHub Actions CI/CD: Flutter tests, Python self-checks and Deno type checks on every PR; release APK and Edge Function deploy on merge.",
       "Design paper presented at ISIRA 2026."
     ],
-    tags: ["Flutter", "TensorFlow", "Keras", "OpenCV", "ESP32", "Supabase"],
-    links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/MEDS" }]
+    learned: [
+      "Security lives on the server: RLS and triggers, not checks in the app.",
+      "Honest evaluation: I found ~75% train/test overlap in my dataset and fixed it.",
+      "CI/CD turns every merge into a tested, shippable release."
+    ],
+    tags: ["Flutter", "TensorFlow Lite", "Supabase", "PostgreSQL", "GitHub Actions", "ESP32", "Claude API"],
+    links: [
+      { label: "Read the case study", href: "#meds" },
+      { label: "GitHub", href: "https://github.com/Mirulfiz04/MEDS" }
+    ]
   },
   {
     id: "ipetro",
@@ -31,26 +40,58 @@ const projects = [
     cats: ["web"],
     img: "assets/project1.jpg",
     award: "🥇 Gold + Best Project",
-    blurb: "Full-stack web system for creating and managing visual inspection reports. I led the team.",
+    blurb: "Full-stack web system for visual inspection reports: upload and annotate photos, build the report, then submit it for approval. I led the team.",
     points: [
       "Team leader and full-stack developer: planned the work, split tasks and integrated the codebase.",
-      "React + TypeScript front end, Laravel back end, styled with Tailwind CSS.",
+      "Laravel back end with an Inertia + React + TypeScript front end, shadcn/ui components and Tailwind CSS.",
+      "Photo upload with an in-browser image editor for marking findings on inspection photos.",
+      "Report workflow with roles: reports are submitted, then approved. Reports export to PDF.",
+      "Chart.js dashboard and two-factor authentication with Laravel Fortify.",
       "Won the Gold Award and the Best Project Award at the Workshop II Innovation Competition."
     ],
-    tags: ["React", "TypeScript", "Laravel", "Tailwind"],
+    learned: [
+      "Leading a team means unblocking people: clear task splits and early integration.",
+      "Designing a real approval workflow with roles and states.",
+      "Type-safe React with TypeScript on a Laravel back end."
+    ],
+    tags: ["Laravel", "React", "TypeScript", "Inertia", "Tailwind", "Chart.js"],
     links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/WORKSHOP2_IPETRO-VISUAL-INSPECTION" }]
+  },
+  {
+    id: "suptulang",
+    title: "Sup Tulang ZZ: QR Table Ordering",
+    cats: ["web"],
+    img: "assets/project-suptulang.jpg",
+    blurb: "Restaurant ordering system: customers scan the QR code on their table, order and track it, while the kitchen and staff manage orders.",
+    points: [
+      "Customer flow: menu with search and categories, add-ons, cart, checkout with 6% SST, payment (online banking or e-wallet) and live order tracking.",
+      "Kitchen display and staff dashboard behind a staff login, with order status and mark-as-paid.",
+      "PHP REST API over MySQL; order confirmation emails sent with PHPMailer.",
+      "A Python script generates a printable QR code for every table."
+    ],
+    learned: [
+      "Designing one system for three kinds of user: customers, kitchen and staff.",
+      "Building a small REST API by hand and keeping the front end separate from it."
+    ],
+    tags: ["PHP", "MySQL", "JavaScript", "REST API", "Python"],
+    links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/group16projectwad" }]
   },
   {
     id: "nanadash",
     title: "NanaDash (SULAM project)",
     cats: ["mobile"],
     img: "assets/project2.jpg",
-    blurb: "Community-service (SULAM) mobile app covering ordering, announcements, delivery and product listings.",
+    blurb: "Community-service (SULAM) mobile app for a local business, covering ordering, announcements, delivery and product listings.",
     points: [
       "Flutter app with ordering, announcement, delivery and product modules.",
-      "Connected to a backend API and database."
+      "Backed by an API and a MySQL database with user sign-in.",
+      "Delivered as a Software Project Management course project."
     ],
-    tags: ["Flutter", "Dart", "API", "Database"],
+    learned: [
+      "Building for a real, non-technical client.",
+      "Planning scope and schedule, and delivering on a deadline."
+    ],
+    tags: ["Flutter", "Dart", "API", "MySQL"],
     links: [
       { label: "Demo video", href: "https://www.youtube.com/watch?v=Zkb5oBkfVlA" },
       { label: "GitHub", href: "https://github.com/Mirulfiz04/SULAM-PROJECT-NANADASH" },
@@ -58,14 +99,36 @@ const projects = [
     ]
   },
   {
+    id: "clinic",
+    title: "Clinic Management System",
+    cats: ["web"],
+    emoji: "🏥",
+    blurb: "Distributed-applications project: Java Swing desktop clients for patients and doctors, talking to a REST server over HTTP.",
+    points: [
+      "REST server on Java’s built-in HttpServer, with CORS and endpoints for patients, doctors, treatments, records and appointments (book, reschedule, status).",
+      "Separate Swing screens for login, registration, patients and doctors.",
+      "MySQL database plus a JSON data layer."
+    ],
+    learned: [
+      "How client–server systems talk: HTTP, JSON and API design without a framework.",
+      "Keeping clients thin and putting the rules on the server."
+    ],
+    tags: ["Java", "Swing", "REST", "MySQL", "JSON"],
+    links: [{ label: "GitHub", href: "https://github.com/Mirulfiz04/Project-DAD" }]
+  },
+  {
     id: "farmintel",
     title: "FarmIntel: Fruit & Vegetable Disease Detector",
     cats: ["ai"],
     img: "assets/project3.jpg",
-    blurb: "Image classifier that spots disease in fruit and vegetables from a photo or a live camera feed.",
+    blurb: "Image classifier that tells healthy produce from diseased produce, from a photo or a live camera feed.",
     points: [
-      "Keras model that classifies healthy and diseased produce.",
+      "Model trained with Teachable Machine and exported to Keras.",
       "Tkinter desktop GUI with camera input and a history of past predictions."
+    ],
+    learned: [
+      "A model is only half the product: it needs a usable interface around it.",
+      "Training data quality matters more than the model."
     ],
     tags: ["Python", "Keras", "Tkinter"],
     links: [
@@ -78,11 +141,12 @@ const projects = [
     title: "Event Management System",
     cats: ["web"],
     img: "assets/project4.png",
-    blurb: "Workshop I project: an event management program taken from analysis to a working build with database storage.",
+    blurb: "Workshop I project: an event management program taken from requirements analysis to a working build with database storage.",
     points: [
       "Requirements analysis through to a working program.",
       "Saves event data to a database."
     ],
+    learned: ["Going from a written specification to working software, end to end."],
     tags: ["Python", "C++", "Database"],
     links: [
       { label: "GitHub", href: "https://github.com/Mirulfiz04/Event-Management-System-workshop1" },
@@ -306,18 +370,22 @@ function openProject(id) {
       <h2 id="mTitle">${p.title}</h2>
       <p class="muted">${p.blurb}</p>
       <ul class="points">${p.points.map((x) => `<li>${x}</li>`).join("")}</ul>
+      ${p.learned ? `<div class="m-learned"><h3>💡 What I learned</h3><ul>${p.learned.map((x) => `<li>${x}</li>`).join("")}</ul></div>` : ""}
       <ul class="tags">${p.tags.map((t) => `<li>${t}</li>`).join("")}</ul>
-      <div class="m-links">${p.links.map((l) => `<a class="btn" href="${encodeURI(l.href)}" target="_blank" rel="noopener">${l.label} ↗</a>`).join("") || `<span class="muted small">Code is private for now. Happy to walk through it in an interview.</span>`}</div>
+      <div class="m-links">${p.links.map((l) => l.href.startsWith("#")
+        ? `<a class="btn primary" href="${l.href}" data-close-modal>${l.label} →</a>`
+        : `<a class="btn" href="${encodeURI(l.href)}" target="_blank" rel="noopener">${l.label} ↗</a>`).join("")}</div>
     </div>`;
-  if ($("#term").open) $("#term").close();
+  $$("dialog[open]").forEach((d) => d.close());
   modal.showModal();
+  unlock("project");
   return true;
 }
 document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-open-project]");
   if (t) { e.preventDefault(); openProject(t.dataset.openProject); }
 });
-modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); }); // click backdrop to close
+modal.addEventListener("click", (e) => { if (e.target === modal || e.target.closest("[data-close-modal]")) modal.close(); }); // backdrop or in-page link closes it
 
 /* ---------- Copy email ---------- */
 $("#copyEmail").addEventListener("click", async (e) => {
@@ -511,6 +579,145 @@ Object.assign(cmds, {
     return repos.map((r) => `<span class="c">${esc(r.name).padEnd(36)}</span> ${(r.language || "").padEnd(11)} <span class="d">${ago(r.pushed_at)}</span>`).join("\n");
   }
 });
+
+/* ---------- Achievements (fun: rewards exploring) ---------- */
+const badges = {
+  project: ["🔍", "Curious", "Opened a project"],
+  casestudy: ["📖", "Deep diver", "Read what I learned from MEDS"],
+  pipeline: ["🚀", "Shipper", "Ran the CI/CD pipeline"],
+  terminal: ["💻", "Hacker", "Opened terminal mode"],
+  palette: ["⌘", "Power user", "Used the command palette"],
+  theme: ["🌗", "Night owl", "Switched the theme"],
+  photo: ["📸", "Paparazzi", "Opened a photo"],
+  polyglot: ["🗣️", "Polyglot", "Said hi in another language"],
+  secret: ["🎮", "Secret finder", "Found an easter egg"]
+};
+let got = [];
+try { got = JSON.parse(localStorage.getItem("badges") || "[]").filter((k) => badges[k]); } catch (e) {}
+const trophy = $("#trophy");
+function renderTrophy() {
+  $("#trophyCount").textContent = `${got.length}/${Object.keys(badges).length}`;
+  $("#badgeList").innerHTML = Object.entries(badges).map(([k, [icon, name, how]]) =>
+    `<li class="${got.includes(k) ? "got" : ""}"><span aria-hidden="true">${got.includes(k) ? icon : "🔒"}</span><b>${name}</b><small>${how}</small></li>`).join("");
+}
+function unlock(k) {
+  if (!badges[k] || got.includes(k)) return;
+  got.push(k);
+  try { localStorage.setItem("badges", JSON.stringify(got)); } catch (e) {}
+  renderTrophy();
+  trophy.classList.remove("bump"); void trophy.offsetWidth; trophy.classList.add("bump");
+  setTimeout(() => toast(`🏆 ${badges[k][1]} unlocked (${got.length}/${Object.keys(badges).length})`), 400);
+  if (got.length === Object.keys(badges).length) setTimeout(() => { confetti(); toast("🏆 All badges! You’ve seen everything. Let’s talk?"); }, 2400);
+}
+renderTrophy();
+trophy.addEventListener("click", () => $("#badges").showModal());
+$("#resetBadges").addEventListener("click", () => { got = []; try { localStorage.removeItem("badges"); } catch (e) {} renderTrophy(); });
+// hook the badges into what already exists
+$("#themeBtn").addEventListener("click", () => unlock("theme"));
+$$("[data-open-term]").forEach((b) => b.addEventListener("click", () => unlock("terminal")));
+$$(".moment").forEach((m) => m.addEventListener("click", () => unlock("photo")));
+helloEl.addEventListener("click", () => unlock("polyglot"));
+new MutationObserver(() => { if (term.open) unlock("terminal"); }).observe(term, { attributes: true, attributeFilter: ["open"] });
+const _confetti = confetti;
+confetti = function () { unlock("secret"); _confetti(); };
+
+/* ---------- MEDS case study: tabs ---------- */
+const tabs = $$('[role="tab"]');
+function selectTab(tab) {
+  tabs.forEach((t) => {
+    const on = t === tab;
+    t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1;
+    $("#" + t.getAttribute("aria-controls")).hidden = !on;
+  });
+  if (tab.id === "t-learn") unlock("casestudy");
+}
+tabs.forEach((t, i) => {
+  t.addEventListener("click", () => selectTab(t));
+  t.addEventListener("keydown", (e) => { // arrow-key navigation, per the ARIA tabs pattern
+    const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!d) return;
+    const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); selectTab(n);
+  });
+});
+
+/* ---------- MEDS case study: architecture explorer ---------- */
+const archText = {
+  sensor: "The ESP32 reads heart rate and SpO₂ from the MAX30102 and serves them over its own Wi-Fi hotspot. A native Android channel pins the app’s request to Wi-Fi so it still works while mobile data carries the internet.",
+  app: "Flutter app (MVVM-style view models and services). It runs the camera, the sensor link, the voice check-in and live fusion, then saves a reading every 5 seconds.",
+  ml: "Two TensorFlow Lite models run on the phone: a MobileNet face-emotion model fed 224×224 crops from ML Kit face detection, and a voice-emotion model. No video leaves the device.",
+  supa: "Supabase: Auth issues a JWT, the Data API turns tables into HTTPS endpoints, and Postgres Row Level Security decides which rows each user can touch. Indexes match the app’s real queries.",
+  edge: "TypeScript Edge Functions hold the secrets: ai-proxy calls Claude for session summaries and insights, and send-data-email sends exports. Both enforce per-user rate limits in Postgres.",
+  claude: "Claude writes plain-language session summaries, insights and admin trend reports. The API key never ships in the app."
+};
+$$("#arch .node").forEach((n) => {
+  const show = () => { $$("#arch .node").forEach((x) => x.classList.toggle("on", x === n)); $("#archInfo").textContent = archText[n.dataset.k]; };
+  n.addEventListener("mouseenter", show); n.addEventListener("focus", show); n.addEventListener("click", show);
+});
+$('#arch .node[data-k="sensor"]').classList.add("on");
+
+/* ---------- MEDS case study: CI/CD pipeline run ---------- */
+let piping = false;
+$("#runPipe").addEventListener("click", async () => {
+  if (piping) return; piping = true;
+  const jobs = $$("#pipe .job"), btn = $("#runPipe");
+  jobs.forEach((j) => j.className = j.className.replace(/ ?(run|ok)/g, ""));
+  btn.disabled = true; btn.textContent = "Running…";
+  const wait = (ms) => new Promise((r) => setTimeout(r, reduceMotion ? 0 : ms));
+  const ci = jobs.filter((j) => !/apk|deploy/.test(j.dataset.job)), cd = jobs.filter((j) => /apk|deploy/.test(j.dataset.job));
+  ci.forEach((j) => j.classList.add("run"));
+  for (const j of ci) { await wait(450 + Math.random() * 500); j.classList.replace("run", "ok"); }
+  cd.forEach((j) => j.classList.add("run"));
+  for (const j of cd) { await wait(700); j.classList.replace("run", "ok"); }
+  btn.disabled = false; btn.textContent = "✓ Shipped · run again";
+  toast("✅ All checks passed · APK built · functions deployed");
+  unlock("pipeline");
+  piping = false;
+});
+
+/* ---------- Command palette (Ctrl/⌘ + K) ---------- */
+const pal = $("#palette"), palIn = $("#palInput"), palList = $("#palList");
+const go = (hash) => () => { pal.close(); location.hash = hash; };
+const actions = [
+  ...[["About", "#about"], ["Experience", "#experience"], ["Projects", "#projects"], ["MEDS case study", "#meds"], ["Photos", "#moments"], ["Skills & education", "#skills"], ["Contact", "#contact"]]
+    .map(([t, h]) => ({ t, g: "Go to", run: go(h) })),
+  ...projects.map((p) => ({ t: p.title, g: "Project", run: () => { pal.close(); openProject(p.id); } })),
+  { t: "Download CV (PDF)", g: "Action", run: () => { pal.close(); printCV(); } },
+  { t: "Copy email address", g: "Action", run: () => { pal.close(); $("#copyEmail").click(); } },
+  { t: "Toggle light / dark theme", g: "Action", run: () => { pal.close(); $("#themeBtn").click(); } },
+  { t: "Open terminal mode", g: "Action", run: () => { pal.close(); openTerm(); } },
+  { t: "View achievements", g: "Action", run: () => { pal.close(); $("#badges").showModal(); } },
+  { t: "GitHub profile", g: "Link", run: () => { pal.close(); open("https://github.com/Mirulfiz04", "_blank", "noopener"); } },
+  { t: "LinkedIn profile", g: "Link", run: () => { pal.close(); open("https://www.linkedin.com/in/mirulfiz040428/", "_blank", "noopener"); } }
+];
+let palItems = [], palIdx = 0;
+// loose "fuzzy" match: every typed character appears in order
+const fuzzy = (q, s) => { let i = 0; for (const ch of s.toLowerCase()) if (ch === q[i]) i++; return i === q.length; };
+function renderPal() {
+  const q = palIn.value.trim().toLowerCase();
+  // substring matches first (earlier = better), loose in-order matches after
+  const score = (a) => { const s = a.t.toLowerCase(), i = s.indexOf(q); return i >= 0 ? i : fuzzy(q, s) ? 100 : -1; };
+  palItems = q ? actions.map((a) => [score(a), a]).filter(([s]) => s >= 0).sort((x, y) => x[0] - y[0]).map(([, a]) => a) : actions;
+  palIdx = Math.min(palIdx, Math.max(palItems.length - 1, 0));
+  palList.innerHTML = palItems.map((a, i) => `<li role="option" id="pal-${i}" aria-selected="${i === palIdx}"><span>${a.t}</span><small>${a.g}</small></li>`).join("") || `<li class="empty">No matches</li>`;
+  palIn.setAttribute("aria-activedescendant", palItems.length ? `pal-${palIdx}` : "");
+  $(`#pal-${palIdx}`)?.scrollIntoView({ block: "nearest" });
+}
+function openPalette() { $$("dialog[open]").forEach((d) => d.close()); palIn.value = ""; palIdx = 0; renderPal(); pal.showModal(); palIn.focus(); unlock("palette"); }
+palIn.addEventListener("input", () => { palIdx = 0; renderPal(); });
+palIn.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown") { palIdx = (palIdx + 1) % Math.max(palItems.length, 1); renderPal(); e.preventDefault(); }
+  if (e.key === "ArrowUp") { palIdx = (palIdx - 1 + palItems.length) % Math.max(palItems.length, 1); renderPal(); e.preventDefault(); }
+  if (e.key === "Enter" && palItems[palIdx]) { e.preventDefault(); palItems[palIdx].run(); }
+});
+palList.addEventListener("click", (e) => { const li = e.target.closest("li[id]"); if (li) palItems[+li.id.slice(4)].run(); });
+pal.addEventListener("click", (e) => { if (e.target === pal) pal.close(); });
+$$("[data-open-palette]").forEach((b) => b.addEventListener("click", openPalette));
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); pal.open ? pal.close() : openPalette(); }
+});
+$("#badges").addEventListener("click", (e) => { if (e.target.id === "badges") e.target.close(); });
+
+Object.assign(cmds, { badges: () => got.map((k) => `${badges[k][0]} ${badges[k][1]}`).join("\n") || "No badges yet. Explore the site!" });
 
 // friendly hello for the curious ones
 console.log("%cHey, recruiter or fellow dev 👋", "font:700 16px sans-serif;color:#00d4a8", "\nPress ` on the page for terminal mode. Source: github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ");
