@@ -13,7 +13,7 @@ Single-page portfolio in **plain HTML, CSS and JavaScript**. No build step, no f
 - Polaroid photo strip with a lightbox.
 - **Download CV**: the print stylesheet turns the page into a clean résumé ("Save as PDF").
 - Guestbook with star ratings you approve before they show, a visit counter, and a 4-question quiz.
-- Command palette (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>), terminal mode (<kbd>`</kbd>), 11 achievement badges, 3D-tilt project cards, and a Konami-code easter egg.
+- Command palette (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>), terminal mode (<kbd>`</kbd>), 13 achievement badges, proof folders, a drag-around photo desk, 3D-tilt project cards, and a Konami-code easter egg.
 - Light/dark theme, reduced-motion support, keyboard accessible, mobile menu.
 - SEO: Open Graph, JSON-LD, `sitemap.xml`, `robots.txt`, and a custom `404.html`.
 

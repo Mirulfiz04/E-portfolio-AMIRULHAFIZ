@@ -663,7 +663,7 @@ strip.innerHTML = moments.map((m, i) => `<button class="moment" type="button" da
   <span class="m-cap">${m.cap}${m.date ? `<small>${m.date}</small>` : ""}</span></button>`).join("");
 // drag to scroll on desktop (touch already scrolls natively)
 let drag = null;
-strip.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse") drag = { x: e.clientX, left: strip.scrollLeft, moved: false }; });
+strip.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse" && !strip.classList.contains("desk")) drag = { x: e.clientX, left: strip.scrollLeft, moved: false }; });
 addEventListener("pointermove", (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 5) drag.moved = true; strip.scrollLeft = drag.left - dx; });
 addEventListener("pointerup", () => setTimeout(() => (drag = null), 0));
 const lb = $("#lightbox");
@@ -695,6 +695,80 @@ $$(".ev").forEach((ev) => {
     if (b) { showMoment(+b.dataset.i); lb.showModal(); unlock("photo"); }
   });
 });
+
+/* ---------- Proof folders: click one to spill its evidence out ---------- */
+const momentIdx = (name) => moments.findIndex((m) => m.src.endsWith(`/${name}.jpg`));
+const folders = [
+  { k: "awards", icon: "🏆", name: "Awards & certificates", items: ["deans-award-cert", "workshop2-award", "w2-award", "deans-award-day", "2"] },
+  { k: "events", icon: "📸", name: "Teaching & events", items: ["cip2026-workshop", "cip2026-mentoring", "cip2026-school-visit", "arduino2026-workshop", "arduino2026-prize", "cip2026-donation"] },
+  { k: "reports", icon: "📄", name: "Reports & posters", items: ["w2-poster",
+    { label: "FarmIntel report", sub: "PDF · 3.5 MB", href: "assets/reports/FarmIntel-Fruit & Vegetable Disease Detector Group 28.pdf" },
+    { label: "Event Management System report", sub: "PDF · 1.6 MB", href: "assets/reports/Final Report AMIRUL HAFIZ BIN ANUAR B032310657.pdf" }] }
+];
+$("#folders").innerHTML = folders.map((f) => {
+  const peek = f.items.filter((x) => typeof x === "string").slice(0, 2).map((n) => `<img src="${moments[momentIdx(n)].src}" alt="" loading="lazy" />`).join("");
+  return `<button class="folder" type="button" data-k="${f.k}" aria-expanded="false" aria-controls="foldBody">
+    <span class="f-peek">${peek}</span><span class="f-front"><span class="f-ico" aria-hidden="true">${f.icon}</span><b>${f.name}</b><small>${f.items.length} files</small></span></button>`;
+}).join("");
+const foldBody = $("#foldBody");
+$("#folders").addEventListener("click", (e) => {
+  const b = e.target.closest(".folder");
+  if (!b) return;
+  const open = b.getAttribute("aria-expanded") === "true";
+  $$(".folder").forEach((x) => x.setAttribute("aria-expanded", "false"));
+  if (open) { foldBody.hidden = true; return; }
+  b.setAttribute("aria-expanded", "true");
+  const f = folders.find((x) => x.k === b.dataset.k);
+  foldBody.innerHTML = f.items.map((x, n) => {
+    if (typeof x !== "string") return `<a class="f-doc" style="--d:${n}" href="${encodeURI(x.href)}" target="_blank" rel="noopener"><span aria-hidden="true">📄</span><b>${x.label}</b><small>${x.sub} ↗</small></a>`;
+    const i = momentIdx(x);
+    return `<button class="f-item" type="button" style="--d:${n}" data-i="${i}"><img src="${moments[i].src}" alt="" loading="lazy" /><span>${moments[i].cap}</span></button>`;
+  }).join("");
+  foldBody.hidden = false;
+  unlock("proof");
+});
+foldBody.addEventListener("click", (e) => {
+  const b = e.target.closest(".f-item");
+  if (b) { showMoment(+b.dataset.i); lb.showModal(); unlock("photo"); }
+});
+
+/* ---------- Moments desk mode: spread the polaroids out and drag them around ---------- */
+const deskBtn = $("#deskMode");
+let deskDrag = null, deskMoved = false;
+deskBtn.addEventListener("click", () => {
+  const on = !strip.classList.contains("desk");
+  strip.classList.toggle("desk", on);
+  deskBtn.setAttribute("aria-pressed", on);
+  deskBtn.textContent = on ? "↩ Back to the strip" : "🖐 Spread them on a desk";
+  $$(".moment", strip).forEach((m, i) => {
+    if (!on) { m.style.left = m.style.top = ""; return; }
+    // loose grid + jitter so the pile covers the whole desk
+    const W = strip.clientWidth, H = strip.clientHeight, w = m.offsetWidth;
+    const cols = Math.max(2, Math.floor(W / (w + 10))), rows = Math.ceil(moments.length / cols);
+    const cellW = (W - w) / Math.max(1, cols - 1), cellH = (H - m.offsetHeight) / Math.max(1, rows - 1);
+    m.style.left = `${Math.min(W - w, Math.max(0, (i % cols) * cellW + (Math.random() - 0.5) * 30))}px`;
+    m.style.top = `${Math.max(0, Math.floor(i / cols) * cellH + (Math.random() - 0.5) * 30)}px`;
+    m.style.zIndex = i;
+  });
+  if (on) unlock("desk");
+});
+strip.addEventListener("pointerdown", (e) => {
+  const m = e.target.closest(".moment");
+  if (!strip.classList.contains("desk") || !m) return;
+  deskDrag = { m, x: e.clientX - m.offsetLeft, y: e.clientY - m.offsetTop, sx: e.clientX, sy: e.clientY };
+  deskMoved = false;
+  m.style.zIndex = 99 + Date.now() % 1e6;
+  m.setPointerCapture(e.pointerId);
+});
+strip.addEventListener("pointermove", (e) => {
+  if (!deskDrag) return;
+  if (Math.hypot(e.clientX - deskDrag.sx, e.clientY - deskDrag.sy) > 5) deskMoved = true;
+  deskDrag.m.style.left = `${Math.max(-40, Math.min(strip.clientWidth - 160, e.clientX - deskDrag.x))}px`;
+  deskDrag.m.style.top = `${Math.max(-20, Math.min(strip.clientHeight - 120, e.clientY - deskDrag.y))}px`;
+});
+strip.addEventListener("pointerup", () => (deskDrag = null));
+// a drag on the desk should not also open the photo
+strip.addEventListener("click", (e) => { if (deskMoved) { e.stopImmediatePropagation(); deskMoved = false; } }, true);
 
 /* ---------- Timeline line fills as you scroll ---------- */
 const tl = $(".timeline");
@@ -783,7 +857,9 @@ const badges = {
   polyglot: ["🗣️", "Polyglot", "Said hi in another language"],
   secret: ["🎮", "Secret finder", "Found an easter egg"],
   quiz: ["🎯", "Top fan", "Got 4/4 in the quiz"],
-  review: ["✍️", "Critic", "Sent a review"]
+  review: ["✍️", "Critic", "Sent a review"],
+  proof: ["🗂️", "Fact checker", "Opened a proof folder"],
+  desk: ["🖐️", "Tidy desk", "Spread the photos on the desk"]
 };
 let got = [];
 try { got = JSON.parse(localStorage.getItem("badges") || "[]").filter((k) => badges[k]); } catch (e) {}
