@@ -452,6 +452,8 @@ function renderLessons(th) {
         <span class="l-d">${l.d}</span>
         <span class="l-th">${themes[l.th]}</span>
       </button>`).join("");
+    lessonList.classList.toggle("clip", th === "all" && !lessonsOpen); // phones: first 6 until asked
+    moreBtn.hidden = th !== "all" || lessonsOpen;
   };
   vt(show);
 }
@@ -460,6 +462,10 @@ themeChips.addEventListener("click", (e) => {
   $$(".chip", themeChips).forEach((x) => x.setAttribute("aria-pressed", x === c));
   renderLessons(c.dataset.th);
 });
+const moreBtn = $("#moreLessons");
+let lessonsOpen = false;
+moreBtn.textContent = `Show all ${allLessons.length} lessons`;
+moreBtn.addEventListener("click", () => { lessonsOpen = true; lessonList.classList.remove("clip"); moreBtn.hidden = true; lessonList.children[6]?.focus(); });
 renderLessons("all");
 
 const modal = $("#projectModal");

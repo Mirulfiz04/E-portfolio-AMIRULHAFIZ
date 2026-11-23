@@ -214,6 +214,8 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .p-card.featured .p-cover { aspect-ratio: 16 / 5.6; }
 .p-cover img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform 0.7s var(--ease); }
 .p-card:hover .p-cover img { transform: scale(1.06); }
+.p-cover img[src$=".png"] { object-fit: contain; object-position: center; padding: 0 16px; box-sizing: border-box; } /* wide transparent logo-style cover */
+.more-lessons { display: none; }
 .p-cover .emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 4rem; }
 .p-award { position: absolute; top: 12px; left: 12px; padding: 4px 10px; font: 600 0.72rem var(--mono); background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 999px; }
 .p-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex: 1; }
@@ -242,7 +244,8 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .contact .lead { margin-inline: auto; }
 .contact .cta { justify-content: center; }
 .contact .btn.primary { overflow-wrap: anywhere; }
-.socials { display: flex; justify-content: center; gap: 24px; }
+.socials { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 24px; }
+.socials a { white-space: nowrap; }
 .footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 48px 0 32px; color: var(--muted); font-size: 0.9rem; }
 
 /* ===== Dialogs ===== */
@@ -470,6 +473,10 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .p-card.featured .p-cover { aspect-ratio: 16 / 8; }
 }
 @media (max-width: 760px) {
+  .lessons.clip > :nth-child(n+7) { display: none; }
+  .more-lessons:not([hidden]) { display: flex; margin: 16px auto 0; }
+  .tabs { flex-wrap: wrap; }
+  .footer { padding-bottom: 80px; } /* room for the floating trophy */
   #themeChips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 2px 16px 8px; scrollbar-width: none; }
   #themeChips .chip { flex: none; }
   .rv-stats { grid-template-columns: 1fr 1fr; }
