@@ -238,6 +238,24 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .edu li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-bottom: 14px; border-bottom: 1px dashed var(--border); }
 .edu li:last-child { border: 0; padding: 0; }
 .edu span { color: var(--muted); font-size: 0.92rem; }
+.edu li { align-items: center; }
+.edu b { flex: 1; min-width: 200px; }
+.edu-logo { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; background: #fff; padding: 3px; transition: transform 0.4s var(--ease); }
+.edu li:hover .edu-logo { transform: rotate(-8deg) scale(1.12); }
+/* skills you can tap */
+.skill-group li { cursor: pointer; }
+.skill-group li.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.skill-info { margin: 16px 0 0; padding: 14px 18px; color: var(--muted); }
+.skill-info b { color: var(--text); }
+.skill-info a { color: var(--accent); }
+/* evidence thumbnails on experience cards */
+.ev { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.ev-label { font-size: 0.8rem; color: var(--muted); margin-right: 2px; }
+.ev-thumb { padding: 0; border: 2px solid var(--border); border-radius: 10px; overflow: hidden; width: 64px; height: 64px; cursor: zoom-in; background: none; transition: transform 0.25s var(--ease), border-color 0.25s; }
+.ev-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ev-thumb:hover, .ev-thumb:focus-visible { transform: translateY(-4px) rotate(-3deg) scale(1.08); border-color: var(--accent); }
+/* timeline line fills as you scroll; --fill (0–1) is set in script.js */
+.timeline::after { content: ""; position: absolute; left: 160px; top: 8px; width: 2px; height: calc((100% - 16px) * var(--fill, 0)); background: var(--accent); box-shadow: 0 0 10px var(--accent); }
 
 /* ===== Contact + footer ===== */
 .contact { text-align: center; padding: clamp(32px, 6vw, 64px); background: radial-gradient(600px circle at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%), var(--surface); }
@@ -492,7 +510,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   body { font-size: 16px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .projects { grid-template-columns: 1fr; }
-  .timeline::before { left: 5px; }
+  .timeline::before, .timeline::after { left: 5px; }
   .t-item { grid-template-columns: 1fr; gap: 6px; padding-left: 28px; }
   .t-item::before { left: 0; top: 4px; }
   .t-date { text-align: left; padding: 0; }
@@ -525,7 +543,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   h2[data-cv] { font-size: 0; } /* swap the playful web headings for plain CV ones */
   h2[data-cv]::before { content: attr(data-cv); font-size: 13pt; }
   .timeline { margin-top: 4px; }
-  .timeline::before, .t-item::before { display: none; }
+  .timeline::before, .timeline::after, .t-item::before, .ev, .skill-info, .edu-logo { display: none; }
   .t-item { grid-template-columns: 105px 1fr; gap: 10px; margin-bottom: 6px; break-inside: avoid; }
   .t-date { padding: 0; text-align: left; }
   .badge { display: none; }

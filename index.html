@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" />
   <!-- set theme before paint to avoid a flash -->
   <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -153,6 +153,7 @@
           <div class="card t-card">
             <h3>Student Research Assistant <span class="at">@&nbsp;UTeM</span></h3>
             <p>Ran micro:bit, IoT and HuskyLens workshops for <b>Cabaran Inspirasi Inovasi Pintar 2026</b> with onsemi and PPD Port Dickson. Mentored 2 secondary school teams, and <b>both finished Top 3 at state level</b>. The programme also put 45 micro:bit and 45 Arduino units into local schools.</p>
+            <div class="ev" data-ev="cip2026-workshop cip2026-mentoring cip2026-school-visit arduino2026-workshop arduino2026-prize cip2026-donation"></div>
           </div>
         </li>
         <li class="t-item reveal">
@@ -166,7 +167,8 @@
           <span class="t-date mono">Jan 2026</span>
           <div class="card t-card">
             <h3>Gold Award + Best Project Award <span class="at">@&nbsp;FTMK Workshop II Innovation Competition</span></h3>
-            <p>Best Project Award from industry partner <b>iPetro Services Sdn Bhd</b> for our case study “From Inspection Photo to Visual Inspection Report”, the iPetro system I led as team leader. <a href="#moments" class="proof">See the certificate →</a></p>
+            <p>Best Project Award from industry partner <b>iPetro Services Sdn Bhd</b> for our case study “From Inspection Photo to Visual Inspection Report”, the iPetro system I led as team leader.</p>
+            <div class="ev" data-ev="w2-award workshop2-award w2-poster"></div>
           </div>
         </li>
         <li class="t-item reveal">
@@ -174,6 +176,7 @@
           <div class="card t-card">
             <h3>Dean’s List, five semesters running</h3>
             <p>Bachelor of Computer Science (Software Development), UTeM.</p>
+            <div class="ev" data-ev="deans-award-day deans-award-cert 2"></div>
           </div>
         </li>
       </ol>
@@ -323,13 +326,14 @@
         <div class="card skill-group reveal"><h3>AI &amp; hardware</h3><ul><li>TensorFlow / Keras</li><li>OpenCV</li><li>ESP32</li><li>micro:bit</li><li>HuskyLens</li></ul></div>
         <div class="card skill-group reveal"><h3>Tools &amp; ways of working</h3><ul><li>Git / GitHub</li><li>Figma</li><li>Team leadership</li><li>Teaching &amp; mentoring</li></ul></div>
       </div>
+      <p class="skill-info card" id="skillInfo" aria-live="polite">Tap a skill to see where I’ve used it.</p>
 
       <div class="edu card reveal">
         <h3>Education</h3>
         <ul>
-          <li><b>Bachelor of Computer Science (Software Development)</b><span>UTeM · 2023 – present · CGPA 3.62</span></li>
-          <li><b>Matriculation Programme</b><span>Kolej Matrikulasi Kejuruteraan Pahang · 2022 – 2023 · CGPA 3.89</span></li>
-          <li><b>Sijil Pelajaran Malaysia (SPM)</b><span>2021 · 5A 3B 1C</span></li>
+          <li><img class="edu-logo" src="assets/logos/utem.png" alt="" width="40" height="40" loading="lazy" /><b>Bachelor of Computer Science (Software Development)</b><span>UTeM · 2023 – present · CGPA 3.62</span></li>
+          <li><img class="edu-logo" src="assets/logos/kmkph.png" alt="" width="40" height="40" loading="lazy" /><b>Matriculation Programme</b><span>Kolej Matrikulasi Kejuruteraan Pahang · 2022 – 2023 · CGPA 3.89</span></li>
+          <li><img class="edu-logo" src="assets/logos/smktpg.png" alt="" width="40" height="40" loading="lazy" /><b>Sijil Pelajaran Malaysia (SPM)</b><span>2021 · 5A 3B 1C</span></li>
         </ul>
       </div>
     </section>
@@ -458,6 +462,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <canvas id="confetti" aria-hidden="true"></canvas>
-  <script src="js/script.js" defer></script>
+  <script src="js/script.js?v=3" defer></script>
 </body>
 </html>

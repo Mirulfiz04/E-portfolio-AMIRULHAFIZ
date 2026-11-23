@@ -649,6 +649,8 @@ const moments = [
   { src: "assets/gallery/arduino2026-prize.jpg", date: "May 2026", cap: "Prize-giving for the Arduino programming competition (Pertandingan Pengaturcaraan Arduino), UTeM × onsemi", alt: "Stage slide reading Tempat Ke-1 Pertandingan Pengaturcaraan Arduino, SMK Bukit Saujana, with prize winners in front; faces blurred" },
   { src: "assets/gallery/deans-award-day.jpg", date: "Jun 2026", cap: "Collecting my Dean’s Award at the FTMK Majlis Anugerah", alt: "Amirul Hafiz in a black shirt holding his Dean's Award certificate on the UTeM campus lawn" },
   { src: "assets/gallery/deans-award-cert.jpg", date: "Sem I 2025/2026", cap: "Dean’s List certificate, one of five in a row", alt: "Dean's Award certificate for Amirul Hafiz bin Anuar, Bachelor of Computer Science (Software Development), Semester I Session 2025/2026" },
+  { src: "assets/gallery/w2-award.jpg", date: "Jan 2026", cap: "With the Best Project Award and trophy on the day, FTMK Workshop II Innovation Competition", alt: "Amirul Hafiz in a suit holding the iPetro Best Project Award certificate and a gold trophy" },
+  { src: "assets/gallery/w2-poster.jpg", date: "Jan 2026", cap: "Our iPetro Report Inspection poster: Laravel 3-tier architecture, waterfall method, API 510 reports", alt: "Poster titled iPetro Report Inspection showing the introduction, problem statement, system architecture with Laravel and MySQL, methodology and results" },
   { src: "assets/gallery/workshop2-award.jpg", date: "Jan 2026", cap: "Best Project Award + challenge trophy, FTMK Workshop II Innovation Competition (iPetro)", alt: "Certificate of Excellence from iPetro Services Sdn Bhd for the Best Project Award, held next to a gold trophy" },
   { src: "assets/gallery/2.jpg", date: "Jun 2025", cap: "Receiving my Dean’s Award on stage at UTeM", alt: "Amirul receiving his Dean’s Award certificate on stage at UTeM" },
   { src: "assets/gallery/3.jpg", date: "", cap: "Project review with our lecturer", alt: "Amirul and teammates reviewing a project with their lecturer" },
@@ -681,6 +683,47 @@ $("#lbPrev").addEventListener("click", () => showMoment(lbI - 1));
 $("#lbNext").addEventListener("click", () => showMoment(lbI + 1));
 lb.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") showMoment(lbI - 1); if (e.key === "ArrowRight") showMoment(lbI + 1); });
 lb.addEventListener("click", (e) => { if (e.target === lb || e.target.id === "lbImg") lb.close(); });
+
+/* ---------- Evidence thumbnails on experience cards (open the same lightbox) ---------- */
+$$(".ev").forEach((ev) => {
+  ev.innerHTML = `<span class="ev-label">📎 Evidence</span>` + ev.dataset.ev.split(" ").map((name) => {
+    const i = moments.findIndex((m) => m.src.endsWith(`/${name}.jpg`));
+    return i < 0 ? "" : `<button class="ev-thumb" type="button" data-i="${i}" aria-label="Open photo: ${esc(moments[i].cap)}"><img src="${moments[i].src}" alt="" loading="lazy" /></button>`;
+  }).join("");
+  ev.addEventListener("click", (e) => {
+    const b = e.target.closest(".ev-thumb");
+    if (b) { showMoment(+b.dataset.i); lb.showModal(); unlock("photo"); }
+  });
+});
+
+/* ---------- Timeline line fills as you scroll ---------- */
+const tl = $(".timeline");
+const fillTimeline = () => {
+  const r = tl.getBoundingClientRect();
+  tl.style.setProperty("--fill", Math.max(0, Math.min(1, (innerHeight * 0.6 - r.top) / r.height)).toFixed(3));
+};
+addEventListener("scroll", fillTimeline, { passive: true });
+fillTimeline();
+
+/* ---------- Skills: tap one to see where it was used ---------- */
+const skillInfo = $("#skillInfo");
+$$(".skill-group li").forEach((li) => {
+  li.tabIndex = 0;
+  li.setAttribute("role", "button");
+  const show = () => {
+    $$(".skill-group li.on").forEach((x) => x.classList.remove("on"));
+    li.classList.add("on");
+    const alias = { SQL: "SQL / MySQL / PostgreSQL", "Tailwind CSS": "Tailwind" };
+    const terms = (alias[li.textContent] || li.textContent).split(" / ").map((t) => new RegExp(`(^|[^\\w])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^\\w]|$)`, "i"));
+    const used = projects.filter((p) => terms.some((re) => re.test([p.title, p.blurb, ...p.tags].join(" | "))));
+    skillInfo.innerHTML = used.length
+      ? `<b>${esc(li.textContent)}</b> shows up in ${used.length} project${used.length > 1 ? "s" : ""}: ${used.map((p) => `<a href="#projects" data-open-project="${p.id}">${p.title}</a>`).join(" · ")}`
+      : `<b>${esc(li.textContent)}</b> comes from my work and teaching, not a listed project. <a href="#experience">See my experience →</a>`;
+    skillInfo.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); // on phones the answer sits below all groups
+  };
+  li.addEventListener("click", show);
+  li.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(); } });
+});
 
 /* ---------- Live GitHub activity (public API, cached per session) ---------- */
 const ago = (d) => {
