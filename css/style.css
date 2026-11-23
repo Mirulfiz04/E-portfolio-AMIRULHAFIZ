@@ -410,6 +410,14 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
 .js .reveal.in { opacity: 1; transform: none; }
 
 /* ===== Responsive ===== */
+/* 7 nav links stop fitting below ~1080px, so fold them into the menu */
+@media (max-width: 1080px) {
+  .menu-btn { display: grid; }
+  .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; padding: 8px 16px 16px; background: var(--bg); border-bottom: 1px solid var(--border); box-shadow: var(--shadow); }
+  .nav.open { display: flex; animation: rise 0.25s var(--ease); }
+  .nav a { padding: 12px; font-size: 1.05rem; }
+  .nav a::after { left: 12px; right: auto; width: 24px; }
+}
 @media (max-width: 960px) {
   .hero-grid, .about-grid { grid-template-columns: 1fr; }
   .meds { max-width: 420px; transform: none; }
@@ -419,7 +427,6 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .p-card.featured .p-cover { aspect-ratio: 16 / 8; }
 }
 @media (max-width: 760px) {
-  .menu-btn { display: grid; }
   #themeChips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 2px 16px 8px; scrollbar-width: none; }
   #themeChips .chip { flex: none; }
   .cs-stats { grid-template-columns: repeat(2, 1fr); }
@@ -429,10 +436,6 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .stage:last-child { grid-column: 1; grid-row: 3; }
   .panel { padding: 18px; }
   .cv-btn { display: none; }
-  .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; padding: 8px 16px 16px; background: var(--bg); border-bottom: 1px solid var(--border); box-shadow: var(--shadow); }
-  .nav.open { display: flex; animation: rise 0.25s var(--ease); }
-  .nav a { padding: 12px; font-size: 1.05rem; }
-  .nav a::after { left: 12px; right: auto; width: 24px; }
   body { font-size: 16px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .projects { grid-template-columns: 1fr; }
