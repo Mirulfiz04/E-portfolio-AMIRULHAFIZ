@@ -12,7 +12,8 @@ Single-page portfolio in **plain HTML, CSS and JavaScript**. No build step, no f
 - Live "From GitHub" strip of recently pushed repos (public API, cached per session).
 - Polaroid photo strip with a lightbox.
 - **Download CV**: the print stylesheet turns the page into a clean résumé ("Save as PDF").
-- Command palette (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>), terminal mode (<kbd>`</kbd>), 9 achievement badges, and a Konami-code easter egg.
+- Guestbook with star ratings you approve before they show, a visit counter, and a 4-question quiz.
+- Command palette (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>), terminal mode (<kbd>`</kbd>), 11 achievement badges, 3D-tilt project cards, and a Konami-code easter egg.
 - Light/dark theme, reduced-motion support, keyboard accessible, mobile menu.
 - SEO: Open Graph, JSON-LD, `sitemap.xml`, `robots.txt`, and a custom `404.html`.
 
@@ -32,6 +33,22 @@ about.html …      old pages, now redirects to the matching section
 - **Projects:** edit the `projects` array in `js/script.js` (title, blurb, points, learned, tags, links).
 - **Photos:** add a file to `assets/gallery/` and an entry to the `moments` array.
 - **Experience, skills, education:** edit `index.html` directly.
+
+## Guestbook (reviews you approve)
+
+Visitors send a star rating and comment from the **Guestbook** section. Nothing they send appears on the site until you add it yourself, so a toxic comment never goes public.
+
+1. Create a free form at [formspree.io](https://formspree.io), then paste its ID (the part after `/f/`) into `FORMSPREE_ID` in `js/script.js`. Until you do, the form opens an email draft to you instead.
+2. Reviews arrive in your inbox. To publish one, add it to `reviews.json`:
+
+   ```json
+   [
+     { "name": "Jane Tan", "role": "Recruiter at Example", "rating": 5, "comment": "Clear, well-built portfolio.", "date": "2026-11-24" }
+   ]
+   ```
+3. Commit and push. The average rating, review count and sorting update by themselves.
+
+The visit counter uses the free [Abacus](https://jasoncameron.dev/abacus/) API and counts one visit per browser session. If that service is down, the counter hides.
 
 ## Run locally
 

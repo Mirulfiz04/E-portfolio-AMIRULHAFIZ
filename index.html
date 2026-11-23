@@ -333,6 +333,46 @@
       </div>
     </section>
 
+    <!-- REVIEWS -->
+    <section class="section wrap" id="reviews">
+      <p class="eyebrow reveal">Guestbook</p>
+      <h2 class="reveal">What visitors say.</h2>
+      <div class="rv-stats reveal" aria-live="polite">
+        <div class="card rv-stat"><b id="rvAvg">–</b><span class="stars" id="rvAvgStars" aria-hidden="true"></span><small id="rvCount">No reviews yet</small></div>
+        <div class="card rv-stat"><b id="visits">–</b><small>visits to this site</small></div>
+        <button class="card rv-stat rv-quiz" type="button" id="openQuiz"><b aria-hidden="true">🎯</b><small>How well do you know me? Take the 4-question quiz</small></button>
+      </div>
+      <div class="rv-grid">
+        <div class="reveal">
+          <div class="filters rv-sort" role="group" aria-label="Sort reviews">
+            <button class="chip" type="button" data-sort="new" aria-pressed="true">Newest</button>
+            <button class="chip" type="button" data-sort="top" aria-pressed="false">Highest rated</button>
+          </div>
+          <ul class="rv-list" id="rvList"></ul>
+        </div>
+        <form class="card rv-form reveal" id="rvForm">
+          <h3>Leave a review</h3>
+          <p class="muted small">I read every review before it goes up, so it can take a day or two to appear.</p>
+          <fieldset class="rate">
+            <legend>Your rating</legend>
+            <span class="rate-in">
+            <input type="radio" name="rating" id="r5" value="5" required /><label for="r5" title="5 stars">★<span class="sr">5 stars</span></label>
+            <input type="radio" name="rating" id="r4" value="4" /><label for="r4" title="4 stars">★<span class="sr">4 stars</span></label>
+            <input type="radio" name="rating" id="r3" value="3" /><label for="r3" title="3 stars">★<span class="sr">3 stars</span></label>
+            <input type="radio" name="rating" id="r2" value="2" /><label for="r2" title="2 stars">★<span class="sr">2 stars</span></label>
+            <input type="radio" name="rating" id="r1" value="1" /><label for="r1" title="1 star">★<span class="sr">1 star</span></label>
+            </span>
+          </fieldset>
+          <label>Name <input name="name" required maxlength="40" autocomplete="name" /></label>
+          <label><span>Role <span class="muted">(optional)</span></span><input name="role" maxlength="60" placeholder="e.g. Recruiter at …" /></label>
+          <label>Comment <textarea name="comment" required minlength="5" maxlength="500" rows="4"></textarea></label>
+          <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <button class="btn primary" type="submit">Send review</button>
+          <p class="small rv-msg" id="rvMsg" role="status"></p>
+        </form>
+      </div>
+    </section>
+
     <!-- CONTACT -->
     <section class="section wrap" id="contact">
       <div class="card contact reveal">
@@ -376,13 +416,20 @@
   </dialog>
 
   <!-- ACHIEVEMENTS -->
-  <button class="trophy" id="trophy" type="button" aria-label="Achievements"><span aria-hidden="true">🏆</span> <b id="trophyCount">0/9</b></button>
+  <button class="trophy" id="trophy" type="button" aria-label="Achievements"><span aria-hidden="true">🏆</span> <b id="trophyCount">0/11</b></button>
   <dialog class="badges-dlg" id="badges" aria-labelledby="bTitle">
     <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
     <h2 id="bTitle">Achievements</h2>
     <p class="muted small">Unlock them by exploring the site. They’re saved in your browser only.</p>
     <ul class="badge-list" id="badgeList"></ul>
     <button class="btn ghost small" type="button" id="resetBadges">Reset</button>
+  </dialog>
+
+  <!-- QUIZ -->
+  <dialog class="badges-dlg quiz" id="quiz" aria-labelledby="qTitle">
+    <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
+    <h2 id="qTitle">Quick quiz</h2>
+    <div id="qBody" aria-live="polite"></div>
   </dialog>
 
   <!-- PHOTO LIGHTBOX -->

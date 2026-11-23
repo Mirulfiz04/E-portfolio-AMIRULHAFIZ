@@ -536,6 +536,8 @@ const cmds = {
   <span class="c">github</span>       latest repos (live)
   <span class="c">cv</span>           save my CV as PDF
   <span class="c">hello</span>        say hi in 4 languages
+  <span class="c">quiz</span>         4 questions about me
+  <span class="c">review</span>       leave me a review
   <span class="c">theme</span>        toggle light/dark
   <span class="c">clear</span>        clear the screen
   <span class="c">exit</span>         back to the normal site`,
@@ -725,7 +727,9 @@ const badges = {
   theme: ["🌗", "Night owl", "Switched the theme"],
   photo: ["📸", "Paparazzi", "Opened a photo"],
   polyglot: ["🗣️", "Polyglot", "Said hi in another language"],
-  secret: ["🎮", "Secret finder", "Found an easter egg"]
+  secret: ["🎮", "Secret finder", "Found an easter egg"],
+  quiz: ["🎯", "Top fan", "Got 4/4 in the quiz"],
+  review: ["✍️", "Critic", "Sent a review"]
 };
 let got = [];
 try { got = JSON.parse(localStorage.getItem("badges") || "[]").filter((k) => badges[k]); } catch (e) {}
@@ -852,6 +856,132 @@ document.addEventListener("keydown", (e) => {
 $("#badges").addEventListener("click", (e) => { if (e.target.id === "badges") e.target.close(); });
 
 Object.assign(cmds, { badges: () => got.map((k) => `${badges[k][0]} ${badges[k][1]}`).join("\n") || "No badges yet. Explore the site!" });
+
+/* ---------- Guestbook: approved reviews + visitor count ---------- */
+// Paste the Formspree form ID here (formspree.io/f/<ID>). Empty = the form opens an email draft instead.
+const FORMSPREE_ID = "";
+const REVIEW_TO = "amirul.hafiz73@gmail.com";
+let reviews = [], rvSort = "new";
+const starStr = (n) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
+function renderReviews() {
+  const n = reviews.length;
+  const avg = n ? reviews.reduce((a, r) => a + r.rating, 0) / n : 0;
+  $("#rvAvg").textContent = n ? avg.toFixed(1) : "–";
+  $("#rvAvgStars").textContent = n ? starStr(avg) : "";
+  $("#rvCount").textContent = n ? `from ${n} review${n > 1 ? "s" : ""}` : "No reviews yet";
+  $(".rv-sort").hidden = n < 2;
+  const sorted = [...reviews].sort(rvSort === "top" ? (a, b) => b.rating - a.rating || b.date.localeCompare(a.date) : (a, b) => b.date.localeCompare(a.date));
+  $("#rvList").innerHTML = sorted.length ? sorted.map((r) => `<li>
+      <header><b>${esc(r.name)}</b>${r.role ? `<span class="muted small">${esc(r.role)}</span>` : ""}<span class="stars" role="img" aria-label="${r.rating} out of 5 stars">${starStr(r.rating)}</span><time class="muted small" datetime="${esc(r.date)}">${esc(r.date)}</time></header>
+      <p>${esc(r.comment)}</p></li>`).join("")
+    : `<li class="empty">No reviews yet. Be the first one! ✍️</li>`;
+}
+// reviews.json only holds reviews I approved, so nothing unmoderated is ever shown
+fetch("reviews.json", { cache: "no-cache" }).then((r) => r.json())
+  .then((d) => { reviews = d.filter((r) => r && r.name && r.comment && r.rating >= 1 && r.rating <= 5 && r.date); renderReviews(); })
+  .catch(renderReviews);
+$$(".rv-sort .chip").forEach((c) => c.addEventListener("click", () => {
+  rvSort = c.dataset.sort;
+  $$(".rv-sort .chip").forEach((x) => x.setAttribute("aria-pressed", x === c));
+  vt(renderReviews);
+}));
+
+const rvForm = $("#rvForm"), rvMsg = $("#rvMsg");
+rvForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = new FormData(rvForm);
+  if (f.get("_gotcha")) return; // bots fill the hidden field
+  const done = () => { rvForm.reset(); unlock("review"); confetti(); rvMsg.textContent = "Thank you! I’ll read it and put it up soon. 🙏"; };
+  if (!FORMSPREE_ID) {
+    const body = `Rating: ${f.get("rating")}/5\nName: ${f.get("name")}\nRole: ${f.get("role")}\n\n${f.get("comment")}`;
+    location.href = `mailto:${REVIEW_TO}?subject=${encodeURIComponent("Portfolio review")}&body=${encodeURIComponent(body)}`;
+    return done();
+  }
+  const btn = rvForm.querySelector("[type=submit]");
+  btn.disabled = true; rvMsg.textContent = "Sending…";
+  try {
+    const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, { method: "POST", body: f, headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(res.status);
+    done();
+  } catch (err) { rvMsg.textContent = `Couldn’t send it. Please email me at ${REVIEW_TO} instead.`; }
+  btn.disabled = false;
+});
+
+// shortcut: free no-signup counter (abacus), one visit per browser session; hides itself if the API is down
+(async () => {
+  const base = "https://abacus.jasoncameron.dev", key = "ahp-folio-x7k2/visits";
+  let seen = false;
+  try { seen = sessionStorage.getItem("counted") === "1"; } catch (e) {}
+  try {
+    const r = await fetch(`${base}/${seen ? "get" : "hit"}/${key}`);
+    const { value } = await r.json();
+    if (typeof value !== "number") throw 0;
+    try { sessionStorage.setItem("counted", "1"); } catch (e) {}
+    $("#visits").textContent = value.toLocaleString();
+  } catch (e) { $("#visits").closest(".rv-stat").hidden = true; }
+})();
+
+/* ---------- Quiz ---------- */
+const quizQs = [
+  ["Where do I study?", ["UTeM", "UTM", "UM", "USM"], 0],
+  ["What did iPetro win?", ["Hackathon runner-up", "Gold + Best Project Award", "People’s Choice", "Nothing yet"], 1],
+  ["How many languages do I speak?", ["2", "3", "4", "5"], 2],
+  ["What does MEDS detect?", ["Earthquakes", "Plant diseases", "Fraud", "Emotions"], 3]
+];
+const qBody = $("#qBody");
+let qi = 0, qScore = 0;
+function showQ() {
+  if (qi === quizQs.length) {
+    const perfect = qScore === quizQs.length;
+    qBody.innerHTML = `<p class="lead">You got <b>${qScore}/${quizQs.length}</b>. ${perfect ? "You clearly read everything. 🎉" : "Not bad! Every answer is somewhere on this page. 😉"}</p>
+      <p><button class="btn primary" type="button" data-q="again">Try again</button> <a class="btn" href="#reviews" data-q="close">Leave a review</a></p>`;
+    if (perfect) { unlock("quiz"); confetti(); }
+    return;
+  }
+  const [q, opts] = quizQs[qi];
+  qBody.innerHTML = `<div class="quiz-bar" aria-hidden="true"><i style="width:${(qi / quizQs.length) * 100}%"></i></div>
+    <p class="muted small">Question ${qi + 1} of ${quizQs.length}</p><h3>${q}</h3>
+    <ul class="quiz-opts">${opts.map((o, i) => `<li><button class="btn" type="button" data-a="${i}">${o}</button></li>`).join("")}</ul>`;
+  qBody.querySelector("button").focus();
+}
+qBody.addEventListener("click", (e) => {
+  const b = e.target.closest("button, a");
+  if (!b) return;
+  if (b.dataset.q === "again") { qi = qScore = 0; return showQ(); }
+  if (b.dataset.q === "close") return $("#quiz").close();
+  if (b.dataset.a === undefined || qBody.querySelector(".right")) return;
+  const ok = +b.dataset.a === quizQs[qi][2];
+  if (ok) qScore++; else b.classList.add("wrong");
+  qBody.querySelector(`[data-a="${quizQs[qi][2]}"]`).classList.add("right");
+  qi++; setTimeout(showQ, ok ? 600 : 1100);
+});
+function openQuiz() { $$("dialog[open]").forEach((d) => d.close()); qi = qScore = 0; showQ(); $("#quiz").showModal(); }
+$("#openQuiz").addEventListener("click", openQuiz);
+$("#quiz").addEventListener("click", (e) => { if (e.target.id === "quiz") e.target.close(); });
+actions.push(
+  { t: "Guestbook & reviews", g: "Go to", run: go("#reviews") },
+  { t: "Take the quiz", g: "Action", run: () => { pal.close(); openQuiz(); } }
+);
+Object.assign(cmds, {
+  quiz: () => { setTimeout(openQuiz, 300); return "Starting the quiz… good luck!"; },
+  review: () => { setTimeout(() => { term.close(); location.hash = "#reviews"; }, 300); return "Taking you to the guestbook…"; }
+});
+
+/* ---------- 3D tilt on project cards (mouse only, respects reduced motion) ---------- */
+if (!reduceMotion && matchMedia("(pointer: fine)").matches) {
+  list.addEventListener("pointermove", (e) => {
+    const card = e.target.closest(".p-card");
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.classList.add("tilt");
+    card.style.setProperty("--ry", `${((e.clientX - r.left) / r.width - 0.5) * 8}deg`);
+    card.style.setProperty("--rx", `${((e.clientY - r.top) / r.height - 0.5) * -8}deg`);
+  });
+  list.addEventListener("pointerout", (e) => {
+    const card = e.target.closest(".p-card");
+    if (card && !card.contains(e.relatedTarget)) card.classList.remove("tilt");
+  });
+}
 
 // friendly hello for the curious ones
 console.log("%cHey, recruiter or fellow dev 👋", "font:700 16px sans-serif;color:#00d4a8", "\nPress ` on the page for terminal mode. Source: github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ");
