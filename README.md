@@ -1,6 +1,6 @@
 # Amirul Hafiz — Portfolio
 
-Single-page portfolio in **plain HTML, CSS and JavaScript**. No build step, no frameworks, no dependencies.
+Single-page portfolio in **plain HTML, CSS and JavaScript**. No build step and no frameworks. Optional motion comes from GSAP + ScrollTrigger and Lenis (CDN, pinned with integrity hashes) in `js/motion.js`; if they fail to load or the visitor prefers reduced motion, the site works without them.
 
 **Live:** https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ
 

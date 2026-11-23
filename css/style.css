@@ -364,6 +364,19 @@ dialog[open] { animation: rise 0.35s var(--ease); }
 .f-item:hover, .f-doc:hover { transform: translateY(-4px); border-color: var(--accent); }
 @keyframes spill { from { opacity: 0; transform: translateY(-30px) rotate(-4deg) scale(0.9); } }
 
+/* ===== Motion layer (js/motion.js) ===== */
+html.lenis { scroll-behavior: auto; } /* Lenis adds these classes itself */
+html.lenis-stopped { overflow: hidden; }
+h2 .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+h2 .w > span { display: inline-block; transform-origin: left bottom; }
+.marquee { overflow: hidden; padding: 18px 0; border-block: 1px solid var(--border); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.mq-track { display: flex; width: max-content; animation: mq 40s linear infinite; }
+.mq-track span { white-space: nowrap; padding-right: 0.6em; font: 600 clamp(1.1rem, 2.6vw, 1.6rem) var(--font); color: var(--muted); }
+@keyframes mq { to { transform: translateX(-50%); } }
+/* same as the base transitions, plus translate for the magnetic pull */
+.btn { transition: translate 0.25s var(--ease), transform 0.2s var(--ease), background-color 0.2s, border-color 0.2s, box-shadow 0.2s; }
+.trophy { transition: translate 0.25s var(--ease), transform 0.2s var(--ease); }
+
 /* passport-stamp look for unlocked achievements */
 .badge-list li.got { border: 2px dashed var(--accent); border-radius: 50% / 38%; transform: rotate(var(--r, -4deg)); color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); animation: stamp 0.4s var(--ease); }
 .badge-list li.got:nth-child(even) { --r: 3deg; }
