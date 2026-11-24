@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # keep the versions used in .github/workflows up to date
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+
+  # keep the dev tools (ESLint, html-validate, Playwright) up to date; one grouped pull request per week
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      dev-tools:
+        patterns: ["*"]
+    commit-message:
+      prefix: "deps"

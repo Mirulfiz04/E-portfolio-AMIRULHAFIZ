@@ -529,7 +529,7 @@ document.addEventListener("keydown", (e) => {
 const term = $("#term"), out = $("#termOut"), input = $("#termInput");
 const hist = []; let hIdx = 0;
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-function print(html, cls = "") { const d = document.createElement("div"); if (cls) d.className = cls; d.innerHTML = html; out.append(d); out.scrollTop = out.scrollHeight; }
+function termPrint(html, cls = "") { const d = document.createElement("div"); if (cls) d.className = cls; d.innerHTML = html; out.append(d); out.scrollTop = out.scrollHeight; }
 const cmds = {
   help: () => `Commands:
   <span class="c">whoami</span>       short intro
@@ -576,17 +576,17 @@ linkedin  <a href="https://www.linkedin.com/in/mirulfiz040428/" target="_blank" 
 };
 async function run(raw) {
   const line = raw.trim();
-  print(`<span class="c">$</span> ${esc(line)}`);
+  termPrint(`<span class="c">$</span> ${esc(line)}`);
   if (!line) return;
   hist.push(line); hIdx = hist.length;
   const [name, ...rest] = line.split(/\s+/);
   const fn = Object.hasOwn(cmds, name.toLowerCase()) && cmds[name.toLowerCase()];
   const res = fn ? await fn(rest.join(" ").toLowerCase()) : `${esc(name)}: command not found. Type <span class="c">help</span>.`;
-  if (res) print(res);
+  if (res) termPrint(res);
 }
 function openTerm() {
   if (!out.childElementCount) {
-    print(`Welcome to amirul.sh v2.0. Type <span class="c">help</span> to see what I can do.`, "d");
+    termPrint(`Welcome to amirul.sh v2.0. Type <span class="c">help</span> to see what I can do.`, "d");
   }
   term.showModal();
   input.focus();
@@ -635,7 +635,7 @@ addEventListener("beforeprint", () => $$(".reveal").forEach((el) => el.classList
 function printCV() {
   $$("dialog[open]").forEach((d) => d.close());
   toast("Choose “Save as PDF” in the print dialog");
-  setTimeout(() => print(), 300);
+  setTimeout(() => window.print(), 300);
 }
 $$("[data-print-cv]").forEach((b) => b.addEventListener("click", printCV));
 
@@ -930,6 +930,7 @@ $$("[data-open-term]").forEach((b) => b.addEventListener("click", () => unlock("
 helloEl.addEventListener("click", () => unlock("polyglot"));
 new MutationObserver(() => { if (term.open) unlock("terminal"); }).observe(term, { attributes: true, attributeFilter: ["open"] });
 const _confetti = confetti;
+// eslint-disable-next-line no-func-assign -- intentional: wrap confetti so every easter egg also unlocks the badge
 confetti = function () { unlock("secret"); _confetti(); };
 
 /* ---------- MEDS case study: tabs ---------- */

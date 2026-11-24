@@ -1,0 +1,62 @@
+name: Bug report
+description: Something on the site looks wrong or does not work
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A screenshot and the device you used help the most.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What went wrong?
+      description: What did you see, and what did you expect to see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the site on my phone
+        2. Scroll to the Proof section
+        3. Tap a folder
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device and browser
+      options:
+        - iPhone (Safari)
+        - iPhone (Chrome, Brave or other)
+        - Android (Chrome)
+        - Windows or Linux (Chrome or Edge)
+        - Windows or Linux (Firefox)
+        - Mac (Safari)
+        - Mac (Chrome)
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      options:
+        - Light
+        - Dark
+        - Both
+        - Not sure
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or a screen recording
+      description: Drag files into this box.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before sending
+      options:
+        - label: I reloaded the live site (an older cached copy can look broken)
+          required: true

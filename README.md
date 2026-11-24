@@ -1,5 +1,7 @@
 # Amirul Hafiz — Portfolio
 
+[![CI/CD](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/jekyll-gh-pages.yml/badge.svg)](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/jekyll-gh-pages.yml)
+
 Single-page portfolio in **plain HTML, CSS and JavaScript**. No build step and no frameworks. Optional motion comes from GSAP + ScrollTrigger and Lenis (CDN, pinned with integrity hashes) in `js/motion.js`; if they fail to load or the visitor prefers reduced motion, the site works without them.
 
 **Live:** https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ
@@ -26,6 +28,9 @@ js/script.js      all behaviour; project data is the `projects` array near the t
                   photos are the `moments` array
 assets/           portrait, project covers, gallery photos, reports
 about.html …      old pages, now redirects to the matching section
+tests/            browser tests (Playwright, phone + desktop)
+scripts/          static test server and the missing-file checker
+.github/          CI workflow, deploy workflow, issue forms, PR template, Dependabot
 ```
 
 ## Editing content
@@ -58,6 +63,18 @@ python3 -m http.server 8000
 
 Then open http://localhost:8000.
 
+## Quality checks and workflow
+
+The site has no build step, but every change is still checked before it ships: ESLint, HTML validation, a missing-file check and real-browser tests at phone and desktop size run in GitHub Actions on every pull request. Run the same checks locally with `npm ci && npm run check`.
+
+Work is tracked as GitHub issues and moves through issue → branch → pull request → CI → merge → deploy. The full process, including the one-time repository settings, is in [CONTRIBUTING.md](CONTRIBUTING.md), and [CHANGELOG.md](CHANGELOG.md) is the dated timeline of everything that has changed.
+
 ## Deploy
 
-GitHub Pages deploys `main` through `.github/workflows/jekyll-gh-pages.yml`.
+Merging into `main` starts the CI/CD pipeline in `.github/workflows/jekyll-gh-pages.yml`:
+
+```
+CI (lint, HTML, assets, browser tests)  →  build  →  deploy to GitHub Pages  →  verify the live site
+```
+
+Each stage waits for the one before it, so a change that fails CI is never deployed, and a final check confirms the live site is serving that exact commit. Pull requests run the CI stage only (`.github/workflows/ci.yml`).
