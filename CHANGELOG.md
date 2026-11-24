@@ -11,6 +11,8 @@ Drafts, not merged yet. Each line belongs to its own branch: keep a line only wh
 
 - **Changed:** the live-site check now proves the exact commit. The build stamps the CSS and JS links with the short commit ID, so nobody bumps `?v=` by hand ([#15](../../issues/15)) *(branch `feat/stamp-commit-sha`)*
 - **Fixed:** wheel scrolling when GSAP is blocked, the guestbook claiming a review was sent when only an email draft opened, unescaped GitHub card fields, the guestbook sort buttons hiding every project, the phone landscape menu that could not scroll, and canonical links on the old redirect pages *(branch `fix/review-findings`, last commit `b4873c0`)*
+- **Fixed:** on a phone, a proof folder's files now open directly under the tapped folder, a folder closes when tapped again, hidden elements such as the visit counter card really disappear, and the folder icon stays inside its front panel *(branch `fix/folders`, last commit `bb08f34`)*
+- **Added:** optional motion: "Set the mood" on the MEDS widget and hero network, "Send a heartbeat" in the architecture explorer, and project cards that travel when the filter changes. The site still works without the motion libraries *(branch `feat/motion-p1`, last commit `31602a9`)*
 - **Added:** AWS backend code for the guestbook and visit counter, with tests in CI. It is **not deployed and not connected to the site** *(branch `feat/aws-backend`)*
 
 ## 24 Nov 2026: fixes, logos, a playful skills section and a proper workflow
