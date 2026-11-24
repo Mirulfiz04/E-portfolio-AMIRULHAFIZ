@@ -108,6 +108,12 @@ CI  →  Build site  →  Deploy to GitHub Pages  →  Verify the live site
 | **Deploy to GitHub Pages** | Publishes the build. It only ever deploys from `main`: running the pipeline by hand on another branch runs CI and build but never deploys. |
 | **Verify the live site** | `scripts/verify-live.mjs` fetches the live site and fails if it is not serving this commit (same versioned CSS and JS), if any linked file is missing, if the 404 page is wrong, or if a developer file such as `package.json` is public. It retries for about two minutes while GitHub Pages switches over. |
 
+### Cache-busting links (`?v=`): depends on branch `feat/stamp-commit-sha`
+
+**This section is only true once commit `31ae02c` (branch `feat/stamp-commit-sha`, issue #15) is merged to `main`. These docs must merge with or after it. Until then, keep bumping `?v=` by hand when you change CSS or JS.**
+
+After it lands, nobody bumps `?v=N` by hand. The **Build site** job runs `scripts/stamp-version.mjs` on its temporary checkout before Jekyll, which rewrites every `?v=N` on the CSS and JS links of `index.html` to `?v=<short commit ID>` in the published copy only; the files in the repository keep their old numbers. It fails the build if it stamps nothing. The **Verify** stage then runs with `VERIFY_COMMIT` set to the deployed commit and requires the live links to end with that exact ID. A run without `VERIFY_COMMIT` (for example `npm run verify:live` on your machine) compares the links as they are in your checkout. Do not set `GITHUB_SHA` for this: CI sets it too and it would break the local pipeline tests.
+
 Watch it in the **Actions** tab, then reload the live site (close and reopen the tab on a phone) and tick off any "after merge" checks in the pull request. Every deployment is also listed under **Deployments** on the repository page.
 
 If the pipeline is red, read the failing stage. A red **Verify** stage means the deploy happened but the live site is not what was expected: treat it as an incident and roll back.

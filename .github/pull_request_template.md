@@ -13,6 +13,7 @@ Closes #
 - [ ] Looked at it on a phone-sized screen and on desktop
 - [ ] Looked at it in light and dark theme
 - [ ] Added or updated a test if this fixes a bug or adds behaviour
+- [ ] Did not bump `?v=` by hand (only once `feat/stamp-commit-sha` is merged; until then bump it when CSS or JS changes)
 - [ ] Added one line under **Unreleased** in `CHANGELOG.md`
 
 ## Screenshots
