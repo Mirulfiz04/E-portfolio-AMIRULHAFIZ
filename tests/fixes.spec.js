@@ -163,3 +163,14 @@ test.describe("Menu on a landscape phone (B-01)", () => {
     });
   }
 });
+
+test.describe("Redirect stubs (B-03)", () => {
+  for (const stub of ["about", "academic", "contact", "qualities", "works"]) {
+    test(`${stub}.html has an absolute canonical without a fragment`, async ({ request }) => {
+      const html = await (await request.get(`/${stub}.html`)).text();
+      const href = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
+      expect(href).toBe("https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ/");
+      expect(html).toContain("url=index.html#"); // the visitor is still sent to the right section
+    });
+  }
+});
