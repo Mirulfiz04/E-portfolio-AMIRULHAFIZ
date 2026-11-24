@@ -34,7 +34,8 @@ Pull request [#9](../../pull/9)
 | 21:01 | Follow-up recorded: gate the deploy on CI | [#8](../../issues/8) |
 | 21:02 | CI workflow, templates, Dependabot and docs added; pull request opened as a draft; first CI run started | [PR #9](../../pull/9), `794551e` |
 | 21:03 | First CI run on GitHub passed: lint, HTML and assets, browser tests, and the **CI passed** summary | [PR #9](../../pull/9) |
-| 21:08 | CI/CD pipeline added: deploy now waits for CI, deploys only from `main`, then verifies the live site | [#8](../../issues/8), [PR #9](../../pull/9) |
+| 21:08 | CI/CD pipeline added: deploy now waits for CI, deploys only from `main`, then verifies the live site | [#8](../../issues/8), [PR #9](../../pull/9), `d5a7c2b` |
+| 21:10 | Pipeline dry run by hand on the branch: CI and Build site passed, Deploy and Verify were skipped as designed, nothing was published | [run #19](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/runs/45400506631) |
 
 ## 23 Nov 2026: guestbook, photos as proof, and motion
 
