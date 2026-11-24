@@ -4,6 +4,8 @@ import { defineConfig } from "@playwright/test";
 // Two projects: a phone (touch, 430px wide) and a desktop (1280px wide), both in Chromium.
 // PW_PORT lets parallel clones run side by side; reuseExistingServer would otherwise silently test another clone.
 const port = Number(process.env.PW_PORT || 4173);
+// matches the file name only: a clone in a folder called "qa-something" must not change which tests run
+const QA_SPECS = /[\\/]qa-[^\\/]*\.spec\.js$/;
 
 export default defineConfig({
   testDir: "tests",
@@ -18,10 +20,10 @@ export default defineConfig({
     launchOptions: process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {}
   },
   projects: [
-    { name: "phone", testIgnore: /qa-/, use: { viewport: { width: 430, height: 932 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true } },
-    { name: "desktop", testIgnore: /qa-/, use: { viewport: { width: 1280, height: 800 } } },
+    { name: "phone", testIgnore: QA_SPECS, use: { viewport: { width: 430, height: 932 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true } },
+    { name: "desktop", testIgnore: QA_SPECS, use: { viewport: { width: 1280, height: 800 } } },
     // cross-device QA specs set their own viewport/touch per test, so they run once, not once per project above
-    { name: "qa", testMatch: /qa-.*\.spec\.js/, use: { viewport: { width: 1280, height: 800 } } }
+    { name: "qa", testMatch: QA_SPECS, use: { viewport: { width: 1280, height: 800 } } }
   ],
   webServer: {
     command: "node scripts/serve.mjs",
