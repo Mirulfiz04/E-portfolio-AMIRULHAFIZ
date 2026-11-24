@@ -10,13 +10,13 @@ Review result: lint, HTML validation and the asset check were clean; browser tes
 |---|---|---|
 | Wheel scroll dead | If GSAP is blocked but Lenis loads, mouse-wheel scrolling stops working | assigned, no issue yet |
 | Guestbook claims success | With `FORMSPREE_ID` empty, only an email draft opens, but the page says the review was sent | assigned, no issue yet |
+| Guestbook sort hides every project | The sort buttons (**Newest**, **Highest rated**) are always visible. Pressing one takes the visible projects from 9 to 0. Cause: the project filter handler (`js/script.js:434`) is bound to every `.filters .chip`, including the sort chips, which have no `data-filter`; and `display:flex` at `css/style.css:204` overrides `hidden`. Reproduced by Orchestra in Chrome on `e322405` with 0, 1 and 2 reviews. Affects visitors today | assigned to Developer E, not fixed, no issue yet |
 
 ## Suspected, found by reading the code and not run
 
 | What | Detail | Tracked |
 |---|---|---|
 | GitHub card fields not escaped | Fields from the GitHub API are put into the page without escaping; not reproduced | none |
-| Guestbook sort hides projects | The project filter handler (`js/script.js:434`) is bound to every `.filters .chip`, and the guestbook sort chips sit in a `.filters` group (`index.html:364`) with no `data-filter`. Clicking **Newest** or **Highest rated** therefore runs the project filter with an undefined value. Reading suggests every project card is hidden; it was reported as hiding projects with 2 or more reviews. Needs a run to settle which | none |
 
 ## Gaps
 
