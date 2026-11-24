@@ -264,6 +264,8 @@
             <button type="button" class="node" data-k="edge"><span>⚡</span>Edge Functions</button>
             <button type="button" class="node" data-k="claude"><span>✨</span>Claude API</button>
           </div>
+          <p class="beat-row"><button class="btn" type="button" id="sendBeat">▶ Send a heartbeat</button></p>
+          <p class="sr" id="beatStatus" role="status"></p>
           <p class="arch-info" id="archInfo" aria-live="polite">The ESP32 reads heart rate and SpO₂ and serves them over its own Wi-Fi hotspot. The app polls it, and a native Android channel pins that request to Wi-Fi so it still works while mobile data carries the internet.</p>
         </div>
 

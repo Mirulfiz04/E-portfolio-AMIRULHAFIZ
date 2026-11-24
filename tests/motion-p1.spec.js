@@ -1,4 +1,4 @@
-/* global mood */
+/* global mood, __seen */
 import { test, expect } from "./fixtures.js";
 
 // Acceptance tests for the P1 motion items in docs/design/motion-spec.md (Designer, commit 587ed19):
@@ -78,5 +78,122 @@ test.describe("1. Set the mood", () => {
       expect(b.right).toBeLessThanOrEqual(card.right);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+});
+
+test.describe("2. Send a heartbeat", () => {
+  const STOPS = ["ESP32 + MAX30102", "Flutter app", "On-device TFLite", "Flutter app", "Supabase", "Edge Functions", "Claude API"];
+  const beat = (page) => page.locator("#sendBeat");
+  const dots = (page) => page.locator(".beat-dot");
+  const start = async (page) => {
+    await page.goto("/");
+    await beat(page).scrollIntoViewIfNeeded();
+    await beat(page).click();
+    await expect(dots(page)).toHaveCount(1);
+  };
+
+  test("a run visits the seven stops in order, takes about 13 s, ends on Claude and leaves no dot", async ({ page }) => {
+    test.setTimeout(40000);
+    await page.goto("/");
+    await page.evaluate(() => {
+      window.__seen = [];
+      new MutationObserver(() => { const t = document.querySelector("#beatStatus").textContent; if (t) __seen.push(t.replace("Reading reached: ", "")); })
+        .observe(document.querySelector("#beatStatus"), { childList: true, characterData: true, subtree: true });
+    });
+    await beat(page).scrollIntoViewIfNeeded();
+    const t0 = Date.now();
+    await beat(page).click();
+    await expect(dots(page)).toHaveCount(1);
+    await expect(page.locator("#archInfo")).toHaveAttribute("aria-live", "off"); // seven long texts must not queue up
+    await expect(beat(page)).toHaveText("↻ Send again", { timeout: 25000 });
+    const seconds = (Date.now() - t0) / 1000;
+    expect(seconds).toBeGreaterThan(10);
+    expect(seconds).toBeLessThan(18);
+    expect(await page.evaluate(() => __seen)).toEqual(STOPS);
+    await expect(page.locator("#arch .node.on")).toHaveAttribute("data-k", "claude");
+    await expect(dots(page)).toHaveCount(0);
+    await expect(page.locator("#archInfo")).toHaveAttribute("aria-live", "polite");
+    await expect(page.locator("#archInfo")).toContainText("Claude writes plain-language session summaries");
+  });
+
+  test("the dot stays in #arch, never takes pointer events and the button is not a node", async ({ page }) => {
+    await start(page);
+    expect(await dots(page).evaluate((d) => ({ pe: getComputedStyle(d).pointerEvents, inside: !!d.closest("#arch"), hidden: d.getAttribute("aria-hidden") }))).toEqual({ pe: "none", inside: true, hidden: "true" });
+    expect(await beat(page).evaluate((b) => b.closest("#arch") || b.matches(".node"))).toBeFalsy();
+    await beat(page).click(); // skip the pause: moves on, still one dot
+    await expect(dots(page)).toHaveCount(1);
+  });
+
+  test("hovering a part mid-run stops it and that part's text stays", async ({ page }) => {
+    await start(page);
+    await page.locator('#arch .node[data-k="edge"]').hover();
+    await expect(dots(page)).toHaveCount(0);
+    await expect(beat(page)).toHaveText("▶ Send a heartbeat");
+    await expect(page.locator("#archInfo")).toHaveAttribute("aria-live", "polite");
+    await expect(page.locator("#archInfo")).toContainText("TypeScript Edge Functions");
+    await page.waitForTimeout(3000);
+    await expect(page.locator("#archInfo")).toContainText("TypeScript Edge Functions");
+    await expect(dots(page)).toHaveCount(0);
+  });
+
+  test("focusing a part, pressing Escape or scrolling away also stops it", async ({ page }) => {
+    await start(page);
+    await page.locator('#arch .node[data-k="ml"]').focus();
+    await expect(dots(page)).toHaveCount(0);
+
+    await beat(page).click();
+    await expect(dots(page)).toHaveCount(1);
+    await page.keyboard.press("Escape");
+    await expect(dots(page)).toHaveCount(0);
+    await expect(beat(page)).toBeEnabled();
+
+    await beat(page).click();
+    await expect(dots(page)).toHaveCount(1);
+    await page.evaluate(() => scrollTo(0, 0)); // the architecture leaves the screen
+    await expect(dots(page)).toHaveCount(0);
+    await expect(page.locator("#archInfo")).toHaveAttribute("aria-live", "polite");
+  });
+
+  test("hiding the tab mid-run leaves no dot and an enabled button", async ({ page }) => {
+    await start(page);
+    await page.evaluate(() => {
+      Object.defineProperty(document, "hidden", { value: true, configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+      delete document.hidden;
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await expect(dots(page)).toHaveCount(0);
+    await expect(beat(page)).toBeEnabled();
+    await expect(beat(page)).toHaveText("▶ Send a heartbeat");
+  });
+
+  test("two fast presses never run two dots, and it works from the keyboard with focus kept", async ({ page }) => {
+    await page.goto("/");
+    await beat(page).scrollIntoViewIfNeeded();
+    await beat(page).focus();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Space");
+    await expect(dots(page)).toHaveCount(1);
+    await page.waitForTimeout(700);
+    expect(await dots(page).count()).toBe(1);
+    await expect(beat(page)).toBeFocused();
+  });
+
+  test("with reduced motion each press moves exactly one stop: no dot, no timer", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await beat(page).scrollIntoViewIfNeeded();
+    const keys = ["sensor", "app", "ml", "app", "supa", "edge", "claude"];
+    for (const [i, k] of keys.entries()) {
+      await beat(page).click();
+      await expect(page.locator("#arch .node.on")).toHaveAttribute("data-k", k);
+      await expect(dots(page)).toHaveCount(0);
+      await expect(beat(page)).toHaveText(i < keys.length - 1 ? "Next part →" : "↻ Send again");
+    }
+    await page.waitForTimeout(1700); // nothing advances on its own
+    await expect(page.locator("#arch .node.on")).toHaveAttribute("data-k", "claude");
+    await beat(page).click(); // "Send again" starts over
+    await expect(page.locator("#arch .node.on")).toHaveAttribute("data-k", "sensor");
+    await expect(page.locator("#archInfo")).toHaveAttribute("aria-live", "polite");
   });
 });

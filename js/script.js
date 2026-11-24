@@ -1027,6 +1027,68 @@ $$("#arch .node").forEach((n) => {
 });
 $('#arch .node[data-k="sensor"]').classList.add("on");
 
+/* ---------- Send a heartbeat: a reading travels sensor → app → ml → app → supa → edge → claude (motion spec item 2) ---------- */
+(function heartbeat() {
+  const arch = $("#arch"), btn = $("#sendBeat"), say = $("#beatStatus"), info = $("#archInfo");
+  const ORDER = ["sensor", "app", "ml", "app", "supa", "edge", "claude"], EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+  const LABEL = { idle: "▶ Send a heartbeat", next: "Next part →", again: "↻ Send again" };
+  const node = (k) => arch.querySelector(`.node[data-k="${k}"]`);
+  const nameOf = (n) => [...n.childNodes].find((c) => c.nodeType === 3).textContent.trim();
+  // centre of a node inside #arch, minus half the 12 px dot; measured at the start of every hop because the grid is 2 columns on phones
+  const centre = (n) => { const a = arch.getBoundingClientRect(), r = n.getBoundingClientRect(); return [r.left - a.left + r.width / 2 - 6, r.top - a.top + r.height / 2 - 6]; };
+  let run = null, step = 0; // run = the heartbeat in progress: a stale one finds itself replaced and does nothing. step = reduced-motion stepping
+
+  function arrive(k, announce) {
+    const n = node(k);
+    $$("#arch .node").forEach((x) => x.classList.toggle("on", x === n));
+    info.textContent = archText[k];
+    if (announce) say.textContent = `Reading reached: ${nameOf(n)}`;
+    if (!reduceMotion) n.animate([{ scale: 1 }, { scale: 1.06 }, { scale: 1 }], { duration: 300, easing: EASE });
+  }
+  function stop(label = LABEL.idle, keepSay = false) { // back to a clean idle state: no dot, normal live region, enabled button
+    if (run) { clearTimeout(run.timer); run.dot.remove(); run.wake?.(); run = null; }
+    step = 0; info.setAttribute("aria-live", "polite"); btn.textContent = label;
+    if (!keepSay) say.textContent = ""; // a run that finished keeps its last "Reading reached" so it is still announced
+  }
+  async function go() {
+    const me = (run = { dot: document.createElement("span"), timer: 0, wake: null, hopping: false });
+    const live = () => run === me;
+    me.dot.className = "beat-dot"; me.dot.setAttribute("aria-hidden", "true");
+    arch.append(me.dot);
+    info.setAttribute("aria-live", "off"); // seven long texts would queue up; only "Reading reached: …" is announced
+    let [x, y] = centre(node(ORDER[0]));
+    me.dot.style.transform = `translate(${x}px, ${y}px)`;
+    for (let i = 0; i < ORDER.length; i++) {
+      if (i) {
+        btn.textContent = "Sending…"; me.hopping = true;
+        const [nx, ny] = centre(node(ORDER[i]));
+        await me.dot.animate([{ transform: `translate(${x}px, ${y}px)` }, { transform: `translate(${nx}px, ${ny}px)` }], { duration: 550, easing: EASE, fill: "forwards" }).finished.catch(() => {});
+        me.hopping = false; x = nx; y = ny;
+        if (!live()) return;
+      }
+      arrive(ORDER[i], true);
+      if (i === ORDER.length - 1) break;
+      btn.textContent = LABEL.next; // pressing it now skips the pause
+      await new Promise((res) => { me.wake = res; me.timer = setTimeout(res, 1400); });
+      if (!live()) return;
+    }
+    stop(LABEL.again, true);
+  }
+  btn.addEventListener("click", () => {
+    if (reduceMotion) { // no dot, no timer: one part per press
+      if (step >= ORDER.length) step = 0;
+      arrive(ORDER[step++]);
+      btn.textContent = step < ORDER.length ? LABEL.next : LABEL.again;
+    } else if (!run) go();
+    else if (!run.hopping) run.wake?.();
+  });
+  // anything that moves the visitor's attention stops the run
+  $$("#arch .node").forEach((n) => ["mouseenter", "focus", "click", "pointerdown"].forEach((ev) => n.addEventListener(ev, () => stop())));
+  document.addEventListener("visibilitychange", () => document.hidden && run && stop());
+  document.addEventListener("keydown", (e) => e.key === "Escape" && run && stop());
+  new IntersectionObserver(([e]) => !e.isIntersecting && run && stop()).observe(arch);
+})();
+
 /* ---------- MEDS case study: CI/CD pipeline run ---------- */
 let piping = false;
 $("#runPipe").addEventListener("click", async () => {
