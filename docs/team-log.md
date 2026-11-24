@@ -1,25 +1,35 @@
-| Backend | Local AWS backend, documented in `backend/README.md` | Local, not pushed, not merged, branch `feat/aws-backend`: `7520667`, `784c751`, `f0cc3d9` (contract, threat model, environments) and `f76529e` (lint fix). Lint clean; 50 offline tests rerun by Orchestra. **Never validated or deployed on AWS** |
-| QA | Cross-device testing, records in `docs/qa/` | `bd73f3b` on `test/cross-device` (QA plan and Playwright coverage), local and not merged. Reviewed by Orchestra with two changes requested: real-CDN tests must be off by default, and the merge order must be fixed. Rerun: 141 passed, 9 skipped, and 10 of the passes are expected failures. **No sign-off on any branch yet** |
-| Developer E | Stamp asset links with the commit ID (#15), fix the confirmed bugs, then motion items from the design spec | All local, not pushed, not merged, **no QA sign-off**. `31ae02c` (`feat/stamp-commit-sha`, the stamp) and `f29ddc8` (`fix/review-findings`: wheel scroll, guestbook success message, GitHub card escaping) were reviewed by Orchestra with tests rerun (49 passed/15 skipped; 53 passed/7 skipped). `a35a24e` on `fix/review-findings` is the sort fix, **not reviewed yet**. B-01 and B-03 are pending. Motion item 1 is `376962c` on `feat/motion-p1`, **not reviewed**; items 2 and 3 are in progress |
 # Team log
 
 One entry per round. **Status is "assigned" until a commit, issue or run proves more.** Update it in the same pull request as the proof.
 
 ## Round 1: 2026-11-24, starting from `main` at `e322405`
 
-Baseline: PR #9 merged (CI, pipeline, Download CV fix); issues #6, #7 and #8 closed; issue #15 and Dependabot pull requests 10 to 14 open; review findings in [known-issues.md](known-issues.md).
+Baseline: PR #9 merged (CI, pipeline, Download CV fix); issues #6, #7 and #8 closed; issue #15 and Dependabot pull requests 10 to 14 open; review findings in [known-issues.md](known-issues.md). The round paused on a usage limit and resumed on 2026-11-25.
+
+Everything below is local: **nothing is pushed or merged**, and no branch has a full QA sign-off yet.
 
 | Role | Assignment | Status |
 |---|---|---|
 | Orchestra | Coordinates the round, hands out work, checks results before anything is called done | active |
-| Designer | Motion specification, to live in `docs/design/` | specification committed locally (`587ed19`, branch `docs/design-motion`); a proposal only, not built, not reviewed, not merged |
-| Developer E | Stamp asset links with the commit ID (#15), and fix the confirmed bugs | Two local commits, not pushed, not merged, **no QA sign-off**: `31ae02c` (branch `feat/stamp-commit-sha`, the stamp) and `f29ddc8` (branch `fix/review-findings`, fixes for the blocked-GSAP wheel scroll, the guestbook success message and GitHub card escaping). Reviewed by Orchestra, tests rerun by Orchestra: 49 passed and 15 skipped, then 53 passed and 7 skipped. **The guestbook sort bug is not in `f29ddc8`** |
-| QA | Cross-device testing, records in `docs/qa/` | assigned |
-| Backend | Local AWS backend, documented in `backend/README.md` | Two local commits, not pushed, not merged: `7520667` and `784c751` (branch `feat/aws-backend`). 43 offline tests rerun by Orchestra. **Never validated or deployed on AWS** |
-| Documentation | Project records: stale changelog corrected, this `docs/` folder written | committed locally on branch `docs/project-records`; not pushed, no pull request |
+| Designer | Motion specification, to live in `docs/design/` | specification committed locally (`587ed19`, branch `docs/design-motion`); a proposal only |
+| Developer E: stamp | Stamp asset links with the commit ID (#15) | `31ae02c` on `feat/stamp-commit-sha`: reviewed by Orchestra (49 passed, 15 skipped); **QA signed off with conditions** |
+| Developer E: fixes | Fix the confirmed bugs | `b4873c0` on `fix/review-findings` (includes `f29ddc8` and `a35a24e`): scroll, guestbook message, GitHub card escaping, sort, B-01 and B-03. Reviewed by Orchestra, 71 passed and 9 skipped. **QA pending** |
+| Developer E: folders | B-05, B-06, B-08, B-09 | commits `bb08f34`, `00a569d`, `38bbecb` on `fix/folders`; not yet reviewed or QA'd |
+| Developer E: motion | Motion items from the design spec | item 1 `f025831`, item 2 `4a4fcfe`, item 3 `1438e0b` on `feat/motion-p1`. Reviewed by Orchestra (115 passed, 9 skipped); **changes requested; performance not measured** |
+| QA | Cross-device testing, records in `docs/qa/` | `test/cross-device`, now at `2bf8458`, **not yet reviewed by Orchestra**. The earlier `bd73f3b` had two changes requested (real-CDN tests off by default, merge order). Signed off the stamp with conditions; no other branch |
+| Backend | Local AWS backend, documented in `backend/README.md` | `feat/aws-backend` at `f1b4103`: reviewed by Orchestra, backend tests now run in CI, lint clean. **QA pending. Never validated or deployed on AWS** |
+| Documentation | Project records: stale changelog corrected, this `docs/` folder written | local branch `docs/project-records`; no pull request |
 
-Written, but only true once `31ae02c` is merged: the CONTRIBUTING and pull request template wording about no longer bumping `?v=` by hand. Those docs must merge with or after it.
+## Merge order
 
-The round paused on a usage limit and resumed on 2026-11-25.
+Agreed order, nothing merges until the site owner approves each step:
+
+1. stamp (`feat/stamp-commit-sha`)
+2. fixes (`fix/review-findings`)
+3. folders (`fix/folders`)
+4. motion (`feat/motion-p1`)
+5. then the QA, docs, design and backend branches
+
+Anything that touches `docs/` or `backend/` goes only after the fixes, because the fixes add the `_config.yml` exclusions that keep those folders out of the published site (B-10). The `?v=` wording in CONTRIBUTING and the PR template is true only after the stamp is merged.
 
 Not approved yet: pushing, opening pull requests and commenting on issues.

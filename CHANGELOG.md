@@ -7,7 +7,11 @@ Times are **Malaysia time (UTC+8)**. Since 24 Nov 2026 every change has an issue
 
 ## Unreleased
 
-Nothing yet. Add one line here in your next pull request.
+Drafts, not merged yet. Each line belongs to its own branch: keep a line only when its branch is the one merging, and move it under that day's heading.
+
+- **Changed:** the live-site check now proves the exact commit. The build stamps the CSS and JS links with the short commit ID, so nobody bumps `?v=` by hand ([#15](../../issues/15)) *(branch `feat/stamp-commit-sha`)*
+- **Fixed:** wheel scrolling when GSAP is blocked, the guestbook claiming a review was sent when only an email draft opened, unescaped GitHub card fields, the guestbook sort buttons hiding every project, the phone landscape menu that could not scroll, and canonical links on the old redirect pages *(branch `fix/review-findings`, last commit `b4873c0`)*
+- **Added:** AWS backend code for the guestbook and visit counter, with tests in CI. It is **not deployed and not connected to the site** *(branch `feat/aws-backend`)*
 
 ## 24 Nov 2026: fixes, logos, a playful skills section and a proper workflow
 
