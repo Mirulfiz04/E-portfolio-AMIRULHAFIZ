@@ -51,3 +51,13 @@ test.describe("B-06 / B-08 the hidden attribute", () => {
   });
 });
 
+test.describe("B-09 folder icons", () => {
+  for (const w of [320, 390, 430, 760, 761, 1024, 1280]) {
+    test(`the icon sits inside the front panel at ${w}px`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: 900 });
+      await page.goto("/");
+      const over = await page.evaluate(() => [...document.querySelectorAll(".folder")].map((f) => f.querySelector(".f-front").getBoundingClientRect().top - f.querySelector(".f-ico").getBoundingClientRect().top).filter((d) => d > 0.5));
+      expect(over).toEqual([]);
+    });
+  }
+});

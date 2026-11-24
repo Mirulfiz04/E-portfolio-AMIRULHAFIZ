@@ -577,7 +577,8 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .tabs { flex-wrap: wrap; }
   .folders { grid-template-columns: 1fr; gap: 14px; }
   /* fixed photo size (not % of width) so they always sit behind the front panel, whatever the phone width */
-  .folder { height: 160px; --lift-1: -28px; --lift-2: -22px; --persp: 1200px; --tilt: -10deg; }
+  /* 168px, not 160: icon + name + count are 84px and the front panel (bottom-aligned, 16px padding) used to be 5px too short, so the icon poked above its edge */
+  .folder { height: 168px; --lift-1: -28px; --lift-2: -22px; --persp: 1200px; --tilt: -10deg; }
   .f-peek img { top: 12px; width: 120px; height: 90px; }
   .f-front { inset: 64px 0 0; }
   .fold-body { grid-template-columns: 1fr 1fr; }
