@@ -9,7 +9,7 @@ Baseline: PR #9 merged (CI, pipeline, Download CV fix); issues #6, #7 and #8 clo
 | Role | Assignment | Status |
 |---|---|---|
 | Orchestra | Coordinates the round, hands out work, checks results before anything is called done | active |
-| Designer | Motion specification, to live in `docs/design/` | assigned |
+| Designer | Motion specification, to live in `docs/design/` | specification committed locally (`587ed19`, branch `docs/design-motion`); a proposal only, not built, not reviewed, not merged |
 | Developer E | Stamp asset links with the commit ID (#15) and fix the confirmed bugs in [known-issues.md](known-issues.md) | assigned |
 | QA | Cross-device testing, records in `docs/qa/` | assigned |
 | Backend | Local AWS backend, documented in `backend/README.md` | assigned |
