@@ -1,5 +1,7 @@
 # Amirul Hafiz — Portfolio
 
+[![CI](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/ci.yml/badge.svg)](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/ci.yml)
+
 Single-page portfolio in **plain HTML, CSS and JavaScript**. No build step and no frameworks. Optional motion comes from GSAP + ScrollTrigger and Lenis (CDN, pinned with integrity hashes) in `js/motion.js`; if they fail to load or the visitor prefers reduced motion, the site works without them.
 
 **Live:** https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ
@@ -26,6 +28,9 @@ js/script.js      all behaviour; project data is the `projects` array near the t
                   photos are the `moments` array
 assets/           portrait, project covers, gallery photos, reports
 about.html …      old pages, now redirects to the matching section
+tests/            browser tests (Playwright, phone + desktop)
+scripts/          static test server and the missing-file checker
+.github/          CI workflow, deploy workflow, issue forms, PR template, Dependabot
 ```
 
 ## Editing content
@@ -57,6 +62,12 @@ python3 -m http.server 8000
 ```
 
 Then open http://localhost:8000.
+
+## Quality checks and workflow
+
+The site has no build step, but every change is still checked before it ships: ESLint, HTML validation, a missing-file check and real-browser tests at phone and desktop size run in GitHub Actions on every pull request. Run the same checks locally with `npm ci && npm run check`.
+
+Work is tracked as GitHub issues and moves through issue → branch → pull request → CI → merge → deploy. The full process, including the one-time repository settings, is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Deploy
 

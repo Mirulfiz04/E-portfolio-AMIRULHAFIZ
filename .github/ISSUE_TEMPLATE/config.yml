@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Check the live site first
+    url: https://mirulfiz04.github.io/E-portfolio-AMIRULHAFIZ
+    about: Reload it once before reporting, an older cached copy can look broken.
