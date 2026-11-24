@@ -488,7 +488,7 @@ $$(".proj-head .chip").forEach((chip) => chip.addEventListener("click", () => {
   const before = new Map(shownCards().map((c) => [c, c.getBoundingClientRect()]));
   projCards.forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
   const shown = shownCards();
-  projStatus.textContent = `${shown.length} project${shown.length === 1 ? "" : "s"} shown`;
+  if (projStatus) projStatus.textContent = `${shown.length} project${shown.length === 1 ? "" : "s"} shown`; // missing in an older cached index.html
   if (reduceMotion) return;
   const onScreen = (r) => r.bottom > 0 && r.top < innerHeight, clamp = (v) => Math.max(-120, Math.min(120, v)); // one column on phones: cards would travel far
   let n = 0;
@@ -1059,6 +1059,7 @@ $('#arch .node[data-k="sensor"]').classList.add("on");
 /* ---------- Send a heartbeat: a reading travels sensor → app → ml → app → supa → edge → claude (motion spec item 2) ---------- */
 (function heartbeat() {
   const arch = $("#arch"), btn = $("#sendBeat"), say = $("#beatStatus"), info = $("#archInfo");
+  if (!arch || !btn || !say || !info) return; // GitHub Pages ignores ?v=, so a cached older index.html can meet this script without the new controls
   const ORDER = ["sensor", "app", "ml", "app", "supa", "edge", "claude"];
   const LABEL = { idle: "▶ Send a heartbeat", next: "Next part →", again: "↻ Send again" };
   const node = (k) => arch.querySelector(`.node[data-k="${k}"]`);

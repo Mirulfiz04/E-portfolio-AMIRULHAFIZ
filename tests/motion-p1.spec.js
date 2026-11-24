@@ -326,3 +326,29 @@ test.describe("3. Cards that travel", () => {
     expect(widest).toBeLessThanOrEqual(320);
   });
 });
+
+test.describe("An older cached index.html with the new script", () => {
+  // GitHub Pages ignores ?v=, so a visitor can get a cached index.html from before these items together with the new js/script.js.
+  const STRIP = [/<div class="mood"[\s\S]*?<\/div>\s*/, /<p class="beat-row">[\s\S]*?<\/p>\s*/, /<p class="sr" id="beatStatus"[^>]*><\/p>\s*/, /<p class="sr" id="projStatus"[^>]*><\/p>\s*/];
+
+  test("without the new elements nothing throws and the old features still work", async ({ page, pageErrors }) => {
+    await page.route((url) => url.pathname === "/", async (route) => {
+      const response = await route.fetch();
+      let body = await response.text();
+      for (const re of STRIP) {
+        expect(re.test(body), `${re} is in the page`).toBe(true);
+        body = body.replace(re, "");
+      }
+      await route.fulfill({ response, body });
+    });
+    await page.goto("/");
+    await expect(page.locator(".mood-btn, #sendBeat, #beatStatus, #projStatus")).toHaveCount(0);
+    await page.locator("#projectList").scrollIntoViewIfNeeded();
+    await page.locator('.proj-head [data-filter="web"]').click(); // used to need #projStatus
+    await expect.poll(() => page.locator(".p-card:not([hidden])").count()).toBeLessThan(9);
+    await page.locator('#arch .node[data-k="edge"]').hover(); // the explorer itself still works
+    await expect(page.locator("#archInfo")).toContainText("TypeScript Edge Functions");
+    await page.locator("#net").evaluate((c) => c.toDataURL()); // the hero canvas is alive
+    expect(pageErrors).toEqual([]);
+  });
+});
