@@ -1,0 +1,24 @@
+{
+  "name": "e-portfolio-amirulhafiz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Amirul Hafiz's e-portfolio (static site on GitHub Pages). This package.json only holds dev tooling: lint, validation and browser tests.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "validate:html": "html-validate index.html 404.html",
+    "check:assets": "node scripts/check-assets.mjs",
+    "test": "playwright test",
+    "check": "npm run lint && npm run validate:html && npm run check:assets && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "html-validate": "^11.21.1"
+  }
+}
