@@ -1,6 +1,6 @@
 # Motion and interaction spec
 
-For: Developer E (build) and QA (test). Base: `main` at `e322405`. Status: proposal, not built.
+For: Developer E (build) and QA (test). Base: `main` at `e322405`. Status: items 1-3 reviewed at `1438e0b`, changes requested; 4-6 not built.
 
 Idea: **the site reacts as one connected thing.** Most pieces exist but do not talk to each other. Each item below connects two of them, around the work itself (MEDS, projects, skills).
 
@@ -50,10 +50,13 @@ Build in this order, one pull request each. Each is useful alone.
 **Phone/touch:** same buttons, on one row, 44 px each with 4 px gaps (236 px). Remove the hidden click on `#medsFace` (an `aria-hidden` element nobody can reach by keyboard).
 **Keyboard:** Tab to each, Enter or Space to choose. No arrow keys.
 **Reduced motion:** label, face, heart rate and pressed state change at once; the canvas redraws once in the tint. No ring, no movement. Heart rate must be set directly, because its ticker does not run in this mode.
+**Scroll fade:** the existing hero fade in `js/motion.js` must target `.hero-copy` only. Its selector `.hero-copy, .hero > div` matches the outer `.hero-grid` first, which dims this card and makes the buttons look disabled.
 **CDNs down:** identical.
-**Files:** `index.html`, `css/style.css`, `js/script.js`.
+**Files:** `index.html`, `css/style.css`, `js/script.js`, `js/motion.js`.
 
 **Accept when:**
+- With GSAP loaded, the card and all its ancestors have opacity 1 while the mood buttons are on screen, at 320, 430, 760 and 1280 px.
+- At 320 px the card height is the same for all five moods.
 - Choosing Excited sets `#medsEmotion` to "Excited", one button has `aria-pressed="true"`, and it is still "Excited" 4 s later.
 - Pressing it again leaves no button pressed and cycling resumes within 4 s.
 - Under reduced motion, choosing Calm shows "Calm" and 66 bpm, and two canvas captures 500 ms apart are identical.
@@ -67,12 +70,12 @@ Build in this order, one pull request each. Each is useful alone.
 **Purpose:** today the six parts are read one by one. A travelling reading shows how they fit together.
 **Trigger:** a `#sendBeat` button, "▶ Send a heartbeat", under the grid.
 **Order:** sensor → app → ml → app → supa → edge → claude. This runs the data in story order; the existing `archText` is the only copy, so no new technical claims are made.
-**Timing:** a 12 px dot moves centre to centre, 550 ms per hop, `--ease`. On arrival the node gets `.on` and one 1 → 1.06 → 1 scale (300 ms), and `#archInfo` shows its text. Pause 1400 ms at each part. Text must stay readable, so the button becomes "Next part →" on arrival to skip the pause, and "↻ Send again" at the end. About 13 s untouched.
+**Timing:** a 12 px dot moves between the top-centre edges of the parts (centred on the border, so it never rests on an icon or label), 550 ms per hop, `--ease`. On arrival the node gets `.on` and one 1 → 1.06 → 1 scale (300 ms), and `#archInfo` shows its text. Pause 1400 ms at each part. Text must stay readable, so the button becomes "Next part →" on arrival to skip the pause, and "↻ Send again" at the end. About 13 s untouched.
 **Announcements:** the live region would queue seven long texts. During a run set `#archInfo` `aria-live="off"` and announce only "Reading reached: Flutter app" in a visually hidden `role="status"`. Restore `polite` after.
 **Stop:** hover, focus or press on any node, change tab, scroll off screen, or hide the document: cancel the run, remove the dot, restore the button and live region. Use one run token; a stale run must do nothing. The button itself must not count as a node.
-**Phone/touch:** same; the grid is two columns, so measure node centres at the start of each hop. Dot is inside `#arch` (already `position: relative`), `pointer-events: none`.
+**Phone/touch:** same; the grid is two columns, so measure the stops at the start of each hop. At 760 px and below the button is right-aligned, clear of the fixed trophy at bottom-left. Dot is inside `#arch` (already `position: relative`), `pointer-events: none`.
 **Keyboard:** Enter or Space starts and advances; focus stays on the button. Escape stops.
-**Reduced motion:** no dot, no timer. The button reads "Next part" from the first press and steps one part per press.
+**Reduced motion:** no dot, no timer. The first press shows the sensor, each later press moves one part, and the button reads "Next part →" until the end.
 **CDNs down:** identical.
 **Files:** `index.html`, `css/style.css`, `js/script.js`.
 
@@ -81,6 +84,7 @@ Build in this order, one pull request each. Each is useful alone.
 - Hovering or focusing a node mid-run stops it, and that node's text stays for 3 s.
 - Switching tab mid-run and back shows no dot and an enabled button.
 - Two fast presses never run two dots.
+- At 320, 430 and 760 px the button never overlaps `#trophy` at any scroll position.
 - Under reduced motion each press moves exactly one stop.
 - `#archInfo` is `aria-live="polite"` after any end or stop.
 
@@ -183,6 +187,20 @@ Build in this order, one pull request each. Each is useful alone.
 ## Performance check (items 1, 2, 3, 5)
 
 Chrome, 4× CPU slowdown, 430 px, 10 s recording: no long task over 50 ms caused by the effect, and at least 90% of frames within 20 ms. Nothing from these effects runs while its section is off screen.
+
+## Design review of items 1-3 at `1438e0b`
+
+Chrome, real GSAP and Lenis, 320, 430 and 1280 px, dark and light. No script errors, no sideways scroll.
+
+| Check | Dark | Light | Need |
+|---|---|---|---|
+| Mood border on card | 7.37 | 6.29 | 3 |
+| Pressed mood fill on card | 9.72 | 4.17 | 3 |
+| Pressed against unpressed fill | 8.93 | 3.89 | 3 |
+| Dot on panel / node / active node | 9.47 / 8.63 / 7.66 | 3.66 / 3.40 / 3.17 | 3 |
+| Active node text | 12.46 | 13.46 | 4.5 |
+
+Ratios come from computed solid backgrounds; the cursor spotlight and blur were not included. Item 3 accepted. Changes requested for 1 and 2 are written into those items above.
 
 ## Before this branch merges
 
