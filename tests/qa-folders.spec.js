@@ -106,8 +106,9 @@ test.describe("Folder state", () => {
 test.describe("The hidden attribute", () => {
   for (const [name, vp] of [["phone", { width: 390, height: 844 }], ["desktop", { width: 1280, height: 800 }]]) {
     test(`every element with [hidden] is really hidden (${name})`, async ({ page }) => {
-      // B-06/B-07/B-08: author CSS `display` beats the UA's [hidden] rule and there is no global `[hidden] { display: none }`
-      test.fail(true, "B-06/B-07/B-08: #foldBody, .rv-sort and the visits .rv-stat have [hidden] but are still displayed");
+      // B-06/B-08: author CSS `display` beats the UA's [hidden] rule and there is no global `[hidden] { display: none }`.
+      // b4873c0 fixed .rv-sort (B-07) only; #foldBody and the visits .rv-stat still leak.
+      test.fail(true, "B-06/B-08: #foldBody and the visits .rv-stat have [hidden] but are still displayed");
       await page.setViewportSize(vp);
       await page.goto("/");
       await page.waitForLoadState("load");
@@ -126,7 +127,6 @@ test.describe("Guestbook sort chips and project filter", () => {
       test.use({ viewport: vp });
 
       test("with no reviews the sort chips are not shown", async ({ page }) => {
-        test.fail(true, "B-07: .rv-sort has [hidden] but `.filters { display: flex }` overrides it");
         await page.route("**/reviews.json", (r) => r.fulfill({ contentType: "application/json", body: "[]" }));
         await page.goto("/");
         await expect(page.locator("#rvList .empty")).toBeVisible();
@@ -134,7 +134,6 @@ test.describe("Guestbook sort chips and project filter", () => {
       });
 
       test("sorting two reviews does not hide any project", async ({ page }) => {
-        test.fail(true, "B-07: `$$('.filters .chip')` also matches the sort chips, whose data-filter is undefined, so every project is hidden");
         await page.route("**/reviews.json", (r) => r.fulfill({ contentType: "application/json", body: reviews(2) }));
         await page.goto("/");
         await expect(page.locator("#rvList li")).toHaveCount(2);

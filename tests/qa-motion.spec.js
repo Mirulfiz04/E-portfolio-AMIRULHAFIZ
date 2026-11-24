@@ -155,8 +155,9 @@ test.describe("Animated path with reduced motion", () => {
 // CDN partly down: each combination must leave a page that still scrolls and shows its content.
 // (All three blocked needs no network, so it lives in qa-fallback.spec.js.)
 const PARTIAL = [
-  { name: "GSAP blocked, Lenis loads", block: ["gsap"], bug: "B-02: Lenis only ticks from gsap.ticker, so without GSAP it swallows the wheel and the page cannot be scrolled with a mouse" },
-  { name: "ScrollTrigger blocked, GSAP and Lenis load", block: ["scrolltrigger"], bug: "B-02b: same as B-02 (the ticker is only wired after the ScrollTrigger check)" },
+  // B-02 (fixed in b4873c0): Lenis only ticked from gsap.ticker, so without GSAP or ScrollTrigger it swallowed the wheel
+  { name: "GSAP blocked, Lenis loads", block: ["gsap"] },
+  { name: "ScrollTrigger blocked, GSAP and Lenis load", block: ["scrolltrigger"] },
   { name: "Lenis blocked, GSAP loads", block: ["lenis"] }
 ];
 
@@ -165,7 +166,6 @@ for (const c of PARTIAL) {
     test.use({ block: c.block, viewport: { width: 1366, height: 768 } });
 
     test("the wheel still scrolls the page and nothing throws", async ({ page, pageErrors }) => {
-      if (c.bug) test.fail(true, c.bug);
       await page.goto("/");
       await page.waitForLoadState("load");
       await page.waitForTimeout(500); // let any library that does load start up
@@ -184,3 +184,21 @@ for (const c of PARTIAL) {
     });
   });
 }
+
+// B-01 fix with the real libraries: Lenis must not swallow the wheel inside the scrollable menu (data-lenis-prevent)
+test.describe("Menu on a landscape phone with the real libraries", () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true });
+
+  test("the wheel scrolls the open menu, not the page, and Contact comes on screen", async ({ page }) => {
+    await page.goto("/");
+    await expect.poll(() => libsLoaded(page)).toEqual({ gsap: true, st: true, lenis: true });
+    await page.locator("#menuBtn").click();
+    const nav = page.locator("#nav");
+    const box = await nav.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 400);
+    await expect.poll(() => nav.evaluate((el) => el.scrollTop), { timeout: 4000 }).toBeGreaterThan(20);
+    expect(await scrollY(page)).toBe(0);
+    await expect(page.locator("#nav a[href='#contact']")).toBeInViewport();
+  });
+});

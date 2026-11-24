@@ -107,10 +107,9 @@ test.describe("Links and images", () => {
 });
 
 test.describe("Old page URLs (redirect stubs)", () => {
-  // BUG B-03: the stubs declare a relative canonical with a #fragment ("index.html#about"), which search engines ignore.
+  // B-03 (fixed in b4873c0): the stubs used to declare a relative canonical with a #fragment, which search engines ignore.
   for (const file of ["about.html", "academic.html", "contact.html", "qualities.html", "works.html"]) {
     test(`${file} has an absolute canonical without a fragment`, async ({ request }) => {
-      test.fail(true, "B-03: relative canonical with a fragment on the redirect stubs");
       const html = await (await request.get("/" + file)).text();
       const href = html.match(/rel="canonical" href="([^"]+)"/)?.[1] ?? "";
       expect(href).toMatch(/^https:\/\/[^#]+$/);
@@ -127,7 +126,7 @@ test.describe("Internal files are not published", () => {
   });
 
   test("docs/ (QA plan, design specs) is not published", async ({ request }) => {
-    test.fail(true, "B-10: `docs` is missing from the exclude list in _config.yml, so internal QA and design notes would go live");
+    // B-10 (fixed in b4873c0): `docs` and `backend` are in the exclude list of _config.yml. Only meaningful when docs/ exists in the tree.
     expect((await request.get("/docs/qa/test-plan.md")).status()).toBe(404);
   });
 });

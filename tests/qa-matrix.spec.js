@@ -51,16 +51,14 @@ for (const d of DEVICES) {
         await expect(menu).toBeHidden();
         await expect(page.locator("#nav a").first()).toBeVisible();
       }
-      // on a short screen the open menu runs off the bottom (see the next test), so a real tap cannot reach the link there
       const link = page.locator("#nav a[href='#contact']");
-      await (d.h < 480 ? link.dispatchEvent("click") : link.click());
+      await link.scrollIntoViewIfNeeded(); // on a short screen the menu itself scrolls (B-01)
+      await link.click();
       await expect.poll(() => page.evaluate(() => document.querySelector("#contact").getBoundingClientRect().top)).toBeLessThan(d.h * 0.6);
     });
 
     test("the open menu fits on screen, or scrolls, so every link can be reached", async ({ page }) => {
       test.skip(d.w > MENU_BREAKPOINT, "no menu button on wide screens");
-      // BUG B-01: on a phone held sideways the sticky header's menu is ~410px tall and does not scroll.
-      test.fail(d.h < 480, "B-01: menu links below the fold are unreachable on short screens");
       await page.goto("/");
       await page.locator("#menuBtn").click();
       const reachable = await page.evaluate(() => {
@@ -71,6 +69,32 @@ for (const d of DEVICES) {
       });
       expect(reachable).toBe(true);
     });
+
+    if (d.h < 480) {
+      // B-01 fix: the menu is capped to the screen and scrolls; check a real touch swipe, not just the CSS
+      test("a touch swipe scrolls the open menu to Contact and the page behind stays put", async ({ page }) => {
+        await page.goto("/");
+        await page.locator("#menuBtn").tap();
+        const nav = page.locator("#nav");
+        await expect(nav).toBeVisible();
+        const box = await nav.boundingBox();
+        const cdp = await page.context().newCDPSession(page);
+        // raw touch events: Input.synthesizeScrollGesture does nothing in this headless setup, real touch events scroll as a finger would
+        const x = box.x + box.width / 2, y0 = box.y + box.height - 40, y1 = box.y + 40;
+        await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y: y0 }] });
+        for (let i = 1; i <= 12; i++) {
+          await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y0 + ((y1 - y0) * i) / 12 }] });
+          await page.waitForTimeout(16);
+        }
+        await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+        await expect.poll(() => nav.evaluate((el) => el.scrollTop)).toBeGreaterThan(20);
+        expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(0);
+        const contact = page.locator("#nav a[href='#contact']");
+        await expect(contact).toBeInViewport();
+        await contact.tap();
+        await expect.poll(() => page.evaluate(() => document.querySelector("#contact").getBoundingClientRect().top)).toBeLessThan(d.h * 0.6);
+      });
+    }
 
     test("header buttons are big enough to hit (WCAG 2.2 target size, 24px minimum)", async ({ page }) => {
       await page.goto("/");

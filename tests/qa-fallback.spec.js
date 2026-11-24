@@ -24,15 +24,16 @@ test.describe("All three animation libraries blocked", () => {
   });
 });
 
-// BUG B-04: the guestbook only opens a mail draft when no Formspree ID is set, yet it shows "Thank you!"
+// B-04 (fixed in b4873c0): with no Formspree ID the guestbook only opens a mail draft, so it must not say "Thank you!"
 test.describe("Guestbook form", () => {
   test("does not claim the review was sent when it only opened an email draft", async ({ page }) => {
-    test.fail(true, "B-04: success message shown although only a mailto: draft opened (js/script.js, FORMSPREE_ID is empty)");
     await page.goto("/");
     await page.locator("#rvForm label[for=r5]").click();
     await page.locator("#rvForm [name=name]").fill("QA Tester");
     await page.locator("#rvForm [name=comment]").fill("Automated check, please ignore.");
     await page.locator("#rvForm [type=submit]").click();
     await expect(page.locator("#rvMsg")).not.toHaveText(/thank you/i);
+    await expect(page.locator("#rvMsg")).toContainText(/nothing has been sent/i);
+    await expect(page.locator("#rvForm [name=comment]")).toHaveValue("Automated check, please ignore."); // the visitor's text is kept
   });
 });
