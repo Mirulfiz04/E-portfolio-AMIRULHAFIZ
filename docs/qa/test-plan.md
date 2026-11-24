@@ -23,7 +23,7 @@ npx playwright test                       # everything
 npx playwright test --project=qa          # only the cross-device QA specs
 ```
 
-Projects: `phone` (430px touch) and `desktop` (1280px) run the original specs; `qa` runs `tests/qa-*.spec.js`, which set their own size per test. The `qa-motion` specs need internet (they load GSAP/Lenis from the CDN) and skip themselves if it is unreachable. They never open the live site, so the public visit counter is not incremented.
+Projects: `phone` (430px touch) and `desktop` (1280px) run the original specs; `qa` runs `tests/qa-*.spec.js`, which set their own size per test. The `qa-motion` specs load the real GSAP/Lenis from the CDN, so they are **opt-in**: off by default, so CI never depends on a CDN (decision 006). Run them with `$env:PW_REAL_CDN = "1"; npx playwright test --project=qa tests/qa-motion.spec.js` (needs internet; they also skip if the CDN is unreachable). Nothing here opens the live site, so the public visit counter is not incremented.
 
 **"Expected failure" tests** (`test.fail`) document a known bug. They pass while the bug exists and turn red the day it is fixed, which is the cue to delete the `test.fail` line.
 
@@ -60,47 +60,170 @@ Projects: `phone` (430px touch) and `desktop` (1280px) run the original specs; `
 - **P1** printed page hides the topbar and trophy, shows the CV header, no overflow. **M:** open the real print preview and check page breaks and that the PDF is one to two A4 pages.
 - **R1** with reduced motion nothing animates forever.
 
-### Animation (`qa-motion.spec.js`, real GSAP/ScrollTrigger/Lenis)
+### Animation (`qa-motion.spec.js`, real GSAP/ScrollTrigger/Lenis; opt-in with `PW_REAL_CDN=1`)
 - **A1** libraries load (URLs and SRI hashes still valid) with no errors. **A2** mouse wheel scrolls. **A3** headings split into words and settle. **A4** folders pop in and end at opacity 1. **A5** hero drifts and comes back. **A6** menu link glides to its section. **A7** a dialog freezes page scroll and gives it back. **A8** no sideways scroll while animating. **A9** phone: touch scroll works, folders visible. **A10** reduced motion: no word-splitting, normal wheel scroll.
-- **C1-C4** CDN partly down: all blocked / GSAP only blocked / ScrollTrigger only blocked / Lenis only blocked. Each must still scroll and show content (**C2 and C3 fail: B-02**).
+- **C1-C4** CDN partly down: all blocked (`qa-fallback.spec.js`, no network, runs in CI) / GSAP only blocked / ScrollTrigger only blocked / Lenis only blocked (`qa-motion.spec.js`, opt-in). Each must still scroll and show content (**C2 and C3 fail: B-02**).
 - **M:** smoothness (no jank, no flicker when headings animate) on a real phone and an older laptop. Automation can only prove end states.
 
 ### Search on mobile (`qa-seo.spec.js`)
 - **S1** `lang`, title (10-65 chars), description (50-170). **S2** viewport is `width=device-width` and zoom is not disabled. **S3** canonical is the absolute https URL and equals `og:url`. **S4** Open Graph title, description and absolute image. **S5** JSON-LD parses. **S6** no `noindex`. **S7** one visible h1, all images have alt. **S8** `robots.txt` allows crawling and names the sitemap; **S9** `sitemap.xml` lists the canonical page. **S10** all in-page links have a target, local links return < 400, `target=_blank` has `rel=noopener`; **S11** every image loads. **S12** redirect stubs have an absolute canonical (**fails: B-03**).
 - **M:** after publishing, run Google's Mobile-Friendly / PageSpeed Insights on the live URL (needs the user; opening the live page also bumps the public visit counter).
 
-### Guestbook (`qa-motion.spec.js`)
+### Guestbook (`qa-fallback.spec.js`)
 - **G1** submit must not claim success when only a mail draft opened (**fails: B-04**).
+- **G2** with no reviews the sort chips are hidden; **G3** pressing the sort chips never hides a project (`qa-folders.spec.js`; **both fail: B-07**).
+
+### Proof folders and the `hidden` attribute (`qa-folders.spec.js`)
+- **F1** at 320, 390, 430, 760, 761 and 1280px, for each folder: its files appear directly below it and above the next folder on one column, below the row on three columns (**fails for folders 1 and 2 at <= 760px: B-05**).
+- **F2** exactly one folder is `aria-expanded`, and switching moves the mark; **F3** closing a folder hides its files (**fails: B-06**); **F4** the open folder looks open (photos lifted); **F5** icons sit inside the front panel (**fails: B-09**); **F6** after Enter on a folder the next Tab stop is one of its files (**fails: B-05**).
+- **H1** every element with the `hidden` attribute is really hidden, phone and desktop (**fails: B-06/B-07/B-08**); **H2** `docs/` and developer files are not published (`qa-seo.spec.js`; docs **fails: B-10**).
 
 ## Needs the user (not done, not automatable here)
 1. **Real devices (issue 5):** at least one real iPhone (Safari) and one Android (Chrome), portrait and landscape: scrolling feel, address-bar resize, notch/safe areas, tap targets, tap-to-open folders, the menu, the print/CV button, form keyboard, pinch-zoom.
 2. **Firefox and WebKit (Safari engine):** `npx playwright install firefox webkit` downloads a few hundred MB of browsers. Not run; needs the user's OK. After that, add `firefox` and `webkit` projects (3 lines in `playwright.config.js`). WebKit is the closest automated stand-in for iPhone Safari.
 3. Live-site checks (Search Console, PageSpeed) as above.
 
-## Baseline (current `main`, before any fixes)
+## Baseline (`main` e322405 plus this branch's tests, before any fixes)
 
 | Suite | Result |
 |---|---|
 | Original specs, `phone` + `desktop` | 40 passed, 6 skipped (identical to the developer baseline) |
-| New `qa` project | 101 passed, 3 skipped (the skips are "menu fits" on the 3 wide screens, which have no menu button) |
-| of which expected failures (known bugs, reported by Playwright as passed) | 10: B-01 x2, B-02 x2, B-03 x5, B-04 x1 |
+| `qa` project, default (no internet) | 116 passed, 19 skipped (16 real-CDN cases are opt-in, 3 are "menu fits" on wide screens which have no menu) |
+| of the 116, expected failures (known bugs, reported by Playwright as passed) | 26: B-01 x2, B-03 x5, B-04 x1, B-05 x9, B-06 x1 + 2, B-07 x4, B-09 x1, B-10 x1 (the `hidden` audit counts under B-06/B-07/B-08) |
+| `qa`, with `PW_REAL_CDN=1`, `qa-motion.spec.js` only | 16 passed, of which 2 expected failures (B-02 x2) |
 | `eslint .` | clean |
 
 ## Bugs found on `main`
 
-| ID | Severity | Where | Steps | Expected | Actual |
-|---|---|---|---|---|---|
-| **B-01** | high on phones | `css/style.css` mobile `.nav` (breakpoint 1080px) | Phone held sideways (844x390, 740x360). Tap the menu button. | Every link reachable: menu fits or scrolls. | Menu is ~410px tall and runs to y=479 on a 390px screen; the header is sticky and the menu has `overflow: visible`, so the last links (Skills, Contact) are off-screen and cannot be reached. Suggested fix: `max-height: calc(100dvh - 68px); overflow-y: auto` on `.nav.open`. |
-| **B-02** | medium | `js/motion.js` | Block `gsap.min.js` (corporate filter, ad blocker, CDN outage) but let Lenis load. Scroll with the mouse wheel. | Page scrolls. | Page does not scroll: Lenis is created but only ticks from `gsap.ticker`, which never starts. Same when only ScrollTrigger is missing. Fix: create Lenis only after the GSAP check, or drive it with its own `requestAnimationFrame` when GSAP is absent. |
-| **B-03** | low (SEO) | `about/academic/contact/qualities/works.html` | View source. | Absolute canonical without a fragment, or a plain redirect. | `<link rel="canonical" href="index.html#about">`: relative and with a fragment, so search engines ignore it. |
-| **B-04** | medium | `js/script.js` guestbook (`FORMSPREE_ID` is empty) | Fill the review form, press Send. | An honest message ("your email app should open, press send there"). | Shows "Thank you! I'll read it and put it up soon", unlocks the badge and fires confetti although only a `mailto:` draft opened; if the visitor has no mail app or closes it, the review is silently lost. |
+Severity: see "Severities" below. **Blocker or major = no sign-off.** "Status" is what QA has verified, not what a developer claims.
 
-Not bugs: the second `h1` is the hidden print-only CV header; `<img id="lbImg">` (lightbox) has no `src` until opened.
+| ID | Sev | Where | Steps | Expected | Actual | Status |
+|---|---|---|---|---|---|---|
+| **B-01** | major | `css/style.css` mobile `.nav` (<= 1080px) | Phone held sideways (844x390, 740x360); tap the menu button. | Every link reachable: menu fits or scrolls. | Menu is ~410px tall, runs to y=479 on a 390px screen, header is sticky and the menu has `overflow: visible`: Skills and Contact are off-screen and unreachable. Suggested: `max-height: calc(100dvh - 68px); overflow-y: auto` on `.nav.open`. | open; with Developer E |
+| **B-02** | major | `js/motion.js` | Block `gsap.min.js` (or only ScrollTrigger) but let Lenis load; scroll with the mouse wheel. | Page scrolls. | Page does not scroll: Lenis only ticks from `gsap.ticker`. | fix in f29ddc8 (branch still growing): not tested yet |
+| **B-03** | minor (search) | `about/academic/contact/qualities/works.html` | View source. | Absolute canonical without a fragment. | `<link rel="canonical" href="index.html#about">`: relative, with a fragment, so search engines ignore it. | open; with Developer E |
+| **B-04** | major | `js/script.js` guestbook (`FORMSPREE_ID` empty) | Fill the review form, press Send. | Honest message. | "Thank you! I'll read it..." plus badge and confetti although only a `mailto:` draft opened; with no mail app the review is silently lost. | fix in f29ddc8: not tested yet |
+| **B-05** | major | `index.html:193` `#foldBody` after `#folders`; `css/style.css:573` | Phone width (320-760px). Tap folder 1 or 2. | Its files appear directly under it, above the next folder. | One shared panel always follows the LAST folder. At 390px, folder 1 ends at y=4773 and its panel starts at y=5143, below folders 2 and 3 (370px gap). Folder 3 is fine. From 761px (three columns) the panel is correctly below the row. Tab order has the same flaw: Enter on folder 1, Tab goes to folder 2, not to its files. Reported by the user (via Designer). | open; not assigned |
+| **B-06** | major | `js/script.js:719` + `.fold-body { display: grid }` | Open a folder, tap it again to close. | Files disappear. | `aria-expanded` goes false but the files stay on screen (`hidden` is overridden by `display: grid`). This is why the user's second screenshot shows the Awards folder looking closed (photos not lifted) with its files still showing. | open; not assigned |
+| **B-07** | major | `js/script.js:434` selector `$$(".filters .chip")` also matches the guestbook sort chips; `css/style.css:204` `.filters { display: flex }` overrides `[hidden]` on `.rv-sort` | Open the page with 0 reviews; the sort chips are visible. Press one. | Chips hidden with fewer than 2 reviews; sorting never touches the projects. | Chips visible with 0 reviews; pressing one hides all 9 projects (phone and desktop; also with 2 reviews). Found by Orchestra, reproduced by QA. | fix a35a24e on fix/review-findings; QA has NOT tested it yet (waiting for the final SHA) |
+| **B-08** | minor | `js/script.js:1095` visits `.rv-stat` | Visit counter API unreachable. | Stat card removed. | `hidden` is set but the card is still displayed (QA's `[hidden]` audit; the visual effect was not inspected). Same root cause as B-06/B-07: no global `[hidden] { display: none }`. | open |
+| **B-09** | minor (cosmetic) | `.f-ico` in `.f-front`, phone width | Look at the proof folders at 390px. | Icon sits inside the front panel. | Icon box starts 5px above the front panel's top edge; the emoji touches the edge (screenshot confirms). At 1280px it is 17px inside: fine. | open |
+| **B-10** | major | `_config.yml` `exclude:` | Publish the site with `docs/` in the repo. | Internal QA and design notes stay private. | `docs` is not excluded: `GET /docs/qa/test-plan.md` returns 200 on the local Pages-like server (`scripts/serve.mjs` mirrors Jekyll). Raised by the Designer for its own docs; applies to this file too. Fix: add `- docs` to `exclude:` in the same pull request. | open; must be fixed before this branch merges |
+
+Observations (not logged as bugs):
+- **O-1:** resizing 1280 -> 390 with a folder open: the tapped folder moves from y=325 (on screen) to y=2099 (off screen) because the page reflows taller and scroll stays put. Normal reflow, not folder-specific; it returns when resized back.
+- **O-2:** the trophy button is `position: fixed` (81x40, bottom-left) and covers whatever scrolls under it; in the states measured it covered no folder-file text, and the footer reserves 80px for it. A caption under it in the user's screenshot is that button doing its job, unless a caption can never be scrolled clear.
+- Not bugs: the second `h1` is the hidden print header; `img#lbImg` (lightbox) has no `src` until opened.
+
+## Process
+
+### Entry criteria: QA starts testing a build only when
+1. The developer (via Orchestra) names an **exact commit SHA** and branch. No SHA, no test.
+2. The branch is clean to build: `npm ci`, `npm run lint`, `npm run validate:html`, `npm run check:assets` pass.
+3. The change says which issue or Designer acceptance criterion it covers and how to see it (so a case can be traced).
+4. Anything the change cannot show locally (a GitHub Actions run, the live site) is named up front, so it can be recorded as "not tested".
+
+### Exit criteria: QA signs off a SHA only when
+1. **Zero open blocker or major bugs** against that SHA, found by QA or reported by anyone.
+2. Every case in scope has a recorded result: **pass, fail, skipped (with the reason) or not tested**. "Not tested" is never "pass" and never hidden.
+3. Every bug claimed fixed was **retested on that exact SHA** (its `test.fail` marker removed and the test green), and the **full regression** (original 40 + QA suite) ran on the same SHA.
+4. Open minor bugs are listed in the sign-off and accepted by the owner.
+5. No test was edited to make a failure go away.
+
+### Severities
+| Severity | Meaning | Examples | Sign-off |
+|---|---|---|---|
+| **Blocker** | Site unusable for everyone, data loss, security or privacy leak (secrets, personal data), or the pipeline breaks or publishes the wrong thing to production. | Home page does not load; secrets in the published site; deploy publishes a broken build. | never |
+| **Major** | A feature is broken or content is unreachable for a normal group of visitors with no workaround, the site tells the visitor something false, a regression of a fixed issue, or internal files go public. | B-01 (landscape phones cannot reach Contact), B-04 (false "sent"), B-05, B-06, B-07, B-10. | not while open |
+| **Minor** | Cosmetic, wording, or an edge case with an easy workaround. | B-03, B-08, B-09. | allowed if listed and accepted |
+
+### Bug report format (one per bug; send to Orchestra, never as a GitHub issue until the user approves)
+```
+ID / title:        B-nn short sentence
+Severity:          blocker | major | minor      Found on: branch @ exact SHA
+Where:             file:line or page/section
+Environment:       browser + version, viewport / device (emulated or real), theme, motion setting, CDN state
+Steps:             1. ... 2. ... (start from a fresh load)
+Expected:          what should happen (cite the issue or acceptance criterion)
+Actual:            what happens, with measurements (px, counts) or a screenshot path
+Evidence:          failing test name, or "test.fail marker in tests/..."
+Workaround:        none | ...
+Status:            open | fixed in <SHA> | retested <SHA>: pass/fail | closed
+```
+
+### Retest and regression procedure (per SHA)
+1. `git fetch` the branch from the developer's clone (read only), check out the **exact SHA**, detached, in a separate worktree. Own port: `PW_PORT=<unused>`; never reuse another session's server.
+2. Overlay this branch's `playwright.config.js` and `tests/qa-*.spec.js` (uncommitted), `npm ci`, run the static checks, then `npx playwright test` for each project.
+3. For every bug the SHA claims to fix, delete its `test.fail` line and confirm green on that SHA. A red marker-less test is a failed fix.
+4. Run the full regression; compare with the previous sign-off row. Any new failure is a regression and gets a bug report.
+5. Fill a row of the sign-off table. Never sign a SHA that was not the one tested.
+
+### Merge order
+1. **Fixes first.** Each developer fix branch merges with its own tests as today.
+2. **Then `test/cross-device`**, with the `test.fail` marker removed for **every bug that is fixed by then** (otherwise Playwright reports "expected to fail but passed" and CI goes red). Markers stay for bugs still open, so CI stays green and the bug stays visible.
+3. Do not remove a marker until QA has tested the **final fix SHA**; markers are kept until then.
+4. `docs` must be added to `exclude:` in `_config.yml` (B-10) in the same pull request as this branch.
+5. CI runs plain `npx playwright test`, which now includes the `qa` project (~1 min extra). Real-CDN cases are skipped there by design (`PW_REAL_CDN` unset), so CI never depends on a CDN (decision 006).
+
+### Traceability: every case to its source
+| Source | Cases | Result so far |
+|---|---|---|
+| Issue 2: proof folders (photos spill, tilt sticks) | `site.spec.js` (existing); `qa-folders.spec.js` F-pos (6 widths x 3 folders), F-state, F-key | existing pass; B-05, B-06 open |
+| Issue 3: logo on every skill; Issue 4: playful skills | `site.spec.js` (existing) | pass |
+| Issue 5: check on a real phone (open) | manual M1-M3 below | **not tested** (needs the user) |
+| Issue 6: CI, automated tests, contribution workflow | whole suite in CI; `ci.yml` | pass locally; Actions run not tested by QA |
+| Issue 7: Download CV | `site.spec.js` (existing), P1 print | pass |
+| Issue 8: gate the deploy on CI | `pipeline.spec.js` (existing); live smoke checks | local pass; deploy path not tested |
+| Issue 15: stamp commit ID | see sign-off row 1 | signed off with conditions |
+| User request: "ok on pc and laptop and work on mobile" | L1-L8, T1-T3, K1-K3, P1, R1, S1-S12 (`qa-matrix`, `qa-seo`) | pass except B-01, B-03 |
+| User request: "no bug on UI or animation" | A1-A10, C1-C4 (`qa-motion`, opt-in), `qa-fallback` | pass except B-02; smoothness manual |
+| User report via Designer: files open under the wrong folder on mobile | `qa-folders.spec.js` | B-05, B-06 confirmed |
+| Orchestra report: sort chips hide all projects | `qa-folders.spec.js` sort + `[hidden]` audit | B-07, B-08 confirmed |
+| Designer `docs/design/motion-spec.md` @ 587ed19, item 1 Set the mood | D1: choosing Excited sets `#medsEmotion` to "Excited", exactly one `aria-pressed="true"`, still Excited after 4 s; pressing again clears it and cycling resumes in 4 s; reduced motion: Calm shows "Calm" and 66 bpm and two canvas captures 500 ms apart are identical; at 320px five buttons stay on one row | **not tested** (built on feat/motion-p1, no SHA given for test) |
+| item 2 Send a heartbeat | D2: a run visits seven stops in order and leaves no dot; hover/focus mid-run stops it and the text stays 3 s; tab switch mid-run leaves no dot and an enabled button; two fast presses never run two dots; reduced motion: one stop per press; `#archInfo` is `aria-live="polite"` after any end | **not tested** (WIP commit 02e8827 is not ready) |
+| item 3 Cards that travel | D3: each filter shows exactly the cards whose `data-cats` has it, All shows 9; four chips in 500 ms end on the last, no running animation or inline transform 1 s later; **two reviews, both sort chips, all 9 projects visible (fails today: B-07)**; focus returns to the Details button after Escape; print shows all projects | **not tested** (not built) |
+| item 4 Skill wires | D4: text still matches `Flutter shows up in \d+ projects?` and chip count equals it; lines = chips on desktop; three skills in 500 ms leave only the last; at 320px nothing leaves the card and resize keeps lines attached; chips open by click and Enter | **not tested** (not built) |
+| item 5 Desk with weight | D5: a flick moves a photo on after release and ends inside; reduced motion 0 px after release; a drag > 5 px does not open the lightbox, next tap does; ArrowRight moves 24 px and page does not scroll; phone: swipe up in the side strip scrolls the page; Tidy up then leaving desk mode leaves no inline position | **not tested** (not built) |
+| item 6 Badge flight | D6: first proof-folder open makes one flyer gone within 1.5 s, repeat makes none; unlock inside a dialog makes none and shows the toast; accessible name matches `#trophyCount`; "Try next" on exactly one badge and on none at 14/14 | **not tested** (not built) |
+| Designer rules for all six | no new dependency and identical with CDNs blocked (`qa-fallback`); no sideways scroll at 320/390/430/761/1024/1280; controls >= 44px; contrast >= 4.5:1; print hides new controls; perf: 4x CPU, 430px, 10 s, no long task > 50 ms, >= 90% frames within 20 ms | partly covered (width, print); contrast, 44px and perf **not tested** on the new features |
+
+### Sign-off table
+Fill one row per tested SHA. The environment is always: Windows 11, Google Chrome 157 (emulation, not a real device), Node 24, own port, QA overlay from `test/cross-device`.
+
+| Branch | Exact SHA | Pass | Fail | Skipped | Not tested | Open bugs on this SHA | Verdict |
+|---|---|---|---|---|---|---|---|
+| `feat/stamp-commit-sha` | `31ae02cfd27a61a1e8c55f1bcaeef7b86ee8379d` | phone 18, desktop 31 (incl. 9 stamp cases), qa 115 | 0 real failures. One QA marker reported failed: `docs/ is not published` "expected to fail but passed", because this tree has no `docs/` (B-10 only exists on branches that add `docs/`); not a defect of this SHA | phone 14 + desktop 1 (stamp/pipeline cases that run once, plus 5 desktop-only), qa 19 (16 opt-in real-CDN, 3 menu on wide screens) | see "Issue 15 checklist" | B-01..B-10 all **pre-existing**, none introduced; this SHA changes no site file. New: 1 minor (docs, below) | **SIGN OFF WITH CONDITIONS** (below) |
+| `fix/review-findings` | tip f29ddc8 / a35a24e | n/a | n/a | n/a | everything | B-02, B-04, B-07 claimed fixed | **NOT SIGNED OFF.** Branch still growing; QA tests only a final SHA. |
+| `feat/motion-p1` | 376962c, 02e8827 (WIP) | n/a | n/a | n/a | D1-D6 | n/a | **NOT SIGNED OFF.** 02e8827 is labelled work in progress with tests not green. |
+
+#### Issue 15 checklist (sign-off of `31ae02c`)
+| Plan item in issue 15 | Result | Evidence |
+|---|---|---|
+| Small tested script that rewrites `?v=` (`scripts/stamp-version.mjs`) with unit tests | **pass** | 9 stamp cases green. QA stamped a copy: exactly 3 links changed (`css/style.css`, `js/script.js`, `js/motion.js` now `?v=31ae02c`), nothing else; the repo's own `index.html` stayed unchanged; stamping an empty folder or a non-commit ID fails loudly. |
+| Called from Build site before Jekyll, using the commit ID | **pass by review, not tested in Actions** | Step order and `$GITHUB_SHA` read from the diff. The YAML was not parsed by any tool here, and no real run happened: **not tested**. |
+| `verify-live.mjs` expects the stamp when the commit is given, and keeps its local behaviour | **pass** | Local end-to-end with `VERIFY_COMMIT` (a dedicated variable, not `GITHUB_SHA`, because CI sets that for the local tests; reasoned and tested): stamped site + right commit passes; stamped site + wrong commit fails; **unstamped site + right commit fails**; unstamped site without the variable passes (old behaviour); stamped site without the variable fails. The 13 pipeline and stamp cases also pass with `GITHUB_SHA` set like CI does. |
+| Dry run on a branch with the manual Run workflow button | **not tested** | needs a real GitHub Actions run |
+| After merging, watch the first run on `main`; Verify passes with the stamped value | **not tested** | post-merge; see live smoke checks |
+| Update `CONTRIBUTING.md` and the PR template so nobody bumps `?v=` by hand | **not done** (minor) | not in the commit. `CONTRIBUTING.md:70` still describes the old check ("same versioned CSS and JS"). The Designer's spec still says "bump the `?v=`". |
+| Risk: build-step change; keep to one commit so it can be reverted | pass | one commit, 4 files |
+
+**Conditions for the merge:** (1) update the two docs (minor) or the owner accepts it; (2) run the manual dry run and **watch the first run on `main`**; if Verify fails there, revert the merge as `CONTRIBUTING.md` describes; (3) the "docs is not excluded" bug (B-10) is fixed before any branch with `docs/` merges. None of the conditions is a blocker or major bug on this SHA.
+
+### Live-site smoke checks (after a merge to `main`)
+Opening the live page in a browser adds one visit to the public counter, so do at most **one** browser session; the rest is HTTP only.
+1. **Pipeline:** CI -> Build -> Deploy -> Verify all green for the merge commit; Verify output says "serving this commit".
+2. `npm run verify:live` against the live URL passes (HTTP only, no counter): home page, title, every linked file, robots.txt, sitemap.xml, 404 page, developer paths hidden. **Also check `/docs/` returns 404.**
+3. View source: the three asset links end with the merge commit's short ID, not `?v=6` / `?v=5`.
+4. `robots.txt` and `sitemap.xml` load and name the canonical URL.
+5. One real phone, one browser session (issue 5): the hero, menu (portrait and landscape), the three proof folders (**files under the tapped folder; closing hides them**), skills, projects filters, the guestbook (sort chips hidden with 0 reviews; Send tells the truth), Download CV, theme toggle.
+6. One laptop: smooth scroll works; with the browser's "reduce motion" on, the page still scrolls normally.
+7. Console shows no errors; no horizontal scroll at 360px.
+8. Old URLs `about.html`, `academic.html`, `contact.html`, `qualities.html`, `works.html` still land on a section.
+9. Paste the live URL into a link-preview checker (or a chat app): title, description and image appear.
+10. Run Google's Mobile-Friendly / PageSpeed Insights on the live URL (needs the user; adds a visit).
 
 ## Not tested / limits
-- Real devices, Safari, Firefox (above); the live site; screen readers (NVDA/VoiceOver); slow-network and low-end-CPU throttling; touch-gesture details beyond tap and scroll.
-- Colour contrast is checked on three text styles only, not every component.
-- Visual correctness is only covered by attached screenshots, not pixel comparison (no approved reference images exist yet; worth adding once the design settles).
-
-## Next round (after Developer E)
-Re-run `npx playwright test`; for every fixed bug delete its `test.fail` line; add one test per new feature to the matching spec; refresh the screenshots and re-check the manual items.
+- Real devices (issue 5), Safari/WebKit and Firefox (a browser download needs the user's OK; listed, not done); screen readers; throttled network or CPU; real print-to-PDF page breaks; animation smoothness; pixel-level visual checks (screenshots only).
+- Anything that needs a real GitHub Actions run or the live site.
+- Colour contrast is checked on three text styles only.
+- The Designer's six interactions: not built or not final, so **not tested**.
