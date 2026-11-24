@@ -199,7 +199,7 @@ Then confirm the subscription email AWS sends. If an alert arrives that you did 
 cd backend
 node --test
 ```
-Currently 43 tests: validation rules, handler behaviour with an in-memory store, the exact DynamoDB
+Currently 50 tests: validation rules, handler behaviour with an in-memory store, end-to-end acceptance checks (approve-first, unauthorised moderation, no client-chosen status), contract drift between `template.yaml` and `openapi.yaml`, the exact DynamoDB
 requests (with a fake client), moderation, the approve-first rule, no personal data in logs, and
 guardrails on `template.yaml` (CORS origin, no wildcard IAM, no HTTP route for moderation, log retention).
 
@@ -257,6 +257,7 @@ Say what is true:
 - The Node 22 runtime, and the AWS SDK being available at the paths imported in `src/store.mjs`, are assumptions about the Lambda runtime.
 - CORS, throttling and the 4 KB cap at the API Gateway level have not been exercised.
 - Prices, free-tier terms and worst-case figures are estimates (see the cost section).
+- `openapi.yaml` and `template.yaml` were never parsed by a YAML or OpenAPI validator (none was available); the tests read them as text. Run `sam validate --lint` and an OpenAPI linter before relying on them.
 - The site was not changed, so the end-to-end flow (form to API to moderation to public list) is untested.
 
 ## Decisions for you
@@ -265,3 +266,15 @@ Say what is true:
 2. **Alert email** for the budget, and the monthly limit (default $5).
 3. **Deploy or not**, and when. Everything above is local only.
 4. Whether to **change the site** to call this API (needs a separate change outside `backend/`, plus the privacy note).
+
+## Project documents
+
+| File | What it covers |
+|---|---|
+| [docs/requirements.md](docs/requirements.md) | requirements R1-R9, acceptance criteria, the test (or "deploy only") that proves each |
+| [openapi.yaml](openapi.yaml) | the API contract with request, response and error examples (the table above is the short form) |
+| [docs/data-model.md](docs/data-model.md) | table items, the status index, and every access pattern with its IAM permission |
+| [docs/threat-model.md](docs/threat-model.md) | threats, the control for each, and the test for each |
+| [docs/environments.md](docs/environments.md) | local, dev, prod; promotion path; smoke test; monitoring; rollback |
+
+Frontend integration is a separate, later branch, after this contract is agreed.

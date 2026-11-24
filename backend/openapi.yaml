@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Portfolio guestbook and visit counter API
+  version: 0.1.0
+  description: |
+    Contract between the portfolio site and the AWS backend. Moderation is not part of this API:
+    it is an owner-only Lambda invoked with the AWS CLI (see README).
+    A request with no Origin header is allowed (not a browser); a wrong Origin on a POST gets 403.
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com
+    variables:
+      apiId: { default: abc123 }
+      region: { default: ap-southeast-1 }
+paths:
+  /reviews:
+    get:
+      operationId: listReviews
+      summary: Approved reviews only, newest first (max 100)
+      responses:
+        "200":
+          description: Approved reviews. Same shape as the site's reviews.json. Cached 60 s.
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items: { $ref: "#/components/schemas/PublicReview" }
+              example:
+                - { name: Aina, role: Recruiter, rating: 5, comment: "Clear, tidy projects.", date: "2026-11-20" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: createReview
+      summary: Leave a review. It stays pending until the owner approves it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewReview" }
+            example: { rating: 5, name: Aina, role: Recruiter, comment: "Clear, tidy projects.", _gotcha: "" }
+      responses:
+        "202":
+          description: Accepted as pending (also returned, without storing, when the honeypot is filled).
+          content:
+            application/json:
+              example: { status: pending }
+        "400":
+          description: Validation failed. Lists field names, never echoes input.
+          content:
+            application/json:
+              examples:
+                fields: { value: { error: invalid, fields: { name: is required, rating: must be a whole number from 1 to 5 } } }
+                json: { value: { error: invalid_json } }
+        "403": { description: Wrong Origin., content: { application/json: { example: { error: forbidden_origin } } } }
+        "413": { description: Body over 4 KB., content: { application/json: { example: { error: too_large } } } }
+        "415": { description: Content type is not application/json., content: { application/json: { example: { error: unsupported_media_type } } } }
+        "429": { description: Throttled by API Gateway (body is API Gateway's own). }
+        "503":
+          description: Too many unapproved reviews waiting. Retry later.
+          headers: { retry-after: { schema: { type: string }, example: "3600" } }
+          content: { application/json: { example: { error: busy } } }
+        "500": { $ref: "#/components/responses/ServerError" }
+  /visits:
+    get:
+      operationId: getVisits
+      summary: Visit total without counting. Cached 30 s.
+      responses:
+        "200": { description: Total., content: { application/json: { schema: { $ref: "#/components/schemas/Visits" }, example: { visits: 1234 } } } }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: hitVisit
+      summary: Count one visit (the site calls this once per browser session) and return the total.
+      responses:
+        "200": { description: New total., content: { application/json: { schema: { $ref: "#/components/schemas/Visits" }, example: { visits: 1235 } } } }
+        "403": { description: Wrong Origin., content: { application/json: { example: { error: forbidden_origin } } } }
+        "429": { description: Throttled by API Gateway. }
+        "500": { $ref: "#/components/responses/ServerError" }
+components:
+  responses:
+    ServerError:
+      description: Unexpected failure. Nothing about the cause is returned.
+      content:
+        application/json:
+          example: { error: server_error }
+  schemas:
+    NewReview:
+      type: object
+      required: [rating, name, comment]
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5, description: A digit string such as "4" is accepted too. }
+        name: { type: string, minLength: 1, maxLength: 40, description: Single line. }
+        role: { type: string, maxLength: 60, description: "Optional, single line." }
+        comment: { type: string, minLength: 5, maxLength: 500, description: Newlines allowed. }
+        _gotcha: { type: string, description: Honeypot. Must be empty or absent. }
+      description: Other fields are ignored. Control characters are rejected. Body at most 4096 bytes.
+    PublicReview:
+      type: object
+      required: [name, rating, comment, date]
+      properties:
+        name: { type: string }
+        role: { type: string }
+        rating: { type: integer }
+        comment: { type: string }
+        date: { type: string, format: date }
+    Visits:
+      type: object
+      required: [visits]
+      properties:
+        visits: { type: integer, minimum: 0 }
