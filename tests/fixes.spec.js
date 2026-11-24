@@ -143,3 +143,23 @@ test.describe("Published files", () => {
     expect(excludedPaths(process.cwd())).toEqual(expect.arrayContaining(["docs", "backend"]));
   });
 });
+
+test.describe("Menu on a landscape phone (B-01)", () => {
+  test.skip(({ isMobile }) => isMobile, "sets its own viewport sizes");
+  for (const [width, height] of [[844, 390], [740, 360]]) {
+    test(`the open menu fits ${width}x${height} and scrolls to its last link`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto("/");
+      await page.locator(".menu-btn").click();
+      const nav = page.locator("#nav");
+      await expect(nav).toHaveClass(/open/);
+      await nav.evaluate((n) => Promise.all(n.getAnimations().map((a) => a.finished))); // the menu slides in; measure it at rest
+      const box = await nav.evaluate((n) => ({ bottom: n.getBoundingClientRect().bottom, scrolls: n.scrollHeight > n.clientHeight }));
+      expect(box.bottom).toBeLessThanOrEqual(height);
+      expect(box.scrolls).toBe(true); // still the full list, now reachable by scrolling it
+      await nav.evaluate((n) => n.scrollTo(0, n.scrollHeight));
+      await expect(page.locator("#nav a").last()).toBeInViewport({ ratio: 1 });
+      await expect(nav).toHaveAttribute("data-lenis-prevent", ""); // smooth scroll must leave the menu's own scrolling alone
+    });
+  }
+});
