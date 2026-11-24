@@ -781,22 +781,64 @@ fillTimeline();
 
 /* ---------- Skills: tap one to see where it was used ---------- */
 const skillInfo = $("#skillInfo");
-$$(".skill-group li").forEach((li) => {
+const skillLis = $$(".skill-group li");
+const tappedSkills = new Set();
+// sparkles + a boing from the pill you picked. Particles live in a page-sized, clipped layer so they scroll with the page and never add a sideways scrollbar.
+function burst(el, color) {
+  if (reduceMotion || !el.animate) return;
+  const r = el.getBoundingClientRect(), cx = r.left + r.width / 2 + scrollX, cy = r.top + r.height / 2 + scrollY;
+  const layer = document.createElement("div");
+  layer.setAttribute("aria-hidden", "true");
+  layer.style.cssText = `position:absolute;left:0;top:0;width:100%;height:${document.documentElement.scrollHeight}px;overflow:hidden;pointer-events:none;z-index:96`;
+  const palette = [color, "#ffb547", "#ff5f8a", "#00d4a8"];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement("span"), c = palette[i % palette.length], star = i % 3 === 0;
+    const a = (Math.PI * 2 * i) / 18 + Math.random() * 0.4, d = 48 + Math.random() * 56;
+    if (star) p.textContent = "✦";
+    p.style.cssText = `position:absolute;left:${cx}px;top:${cy}px;color:${c};font-size:22px;line-height:1;${star ? "" : `width:9px;height:9px;border-radius:50%;background:${c};`}`;
+    layer.append(p);
+    p.animate([
+      { transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
+      { transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(0.2) rotate(180deg)`, opacity: 0 }
+    ], { duration: 550 + Math.random() * 300, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)", fill: "forwards" });
+  }
+  document.body.append(layer);
+  setTimeout(() => layer.remove(), 1000);
+  el.animate([{ transform: "scale(1)" }, { transform: "scale(1.15) rotate(-4deg)" }, { transform: "scale(0.97)" }, { transform: "scale(1)" }], { duration: 450, easing: "ease-out" });
+}
+const skillShow = new Map();
+$$(".skill-group ul").forEach((ul) => [...ul.children].forEach((li, n) => li.style.setProperty("--n", n)));
+skillLis.forEach((li) => {
   li.tabIndex = 0;
   li.setAttribute("role", "button");
-  const show = () => {
+  const show = (fromRoll = false) => {
     $$(".skill-group li.on").forEach((x) => x.classList.remove("on"));
     li.classList.add("on");
     const alias = { SQL: "SQL / MySQL / PostgreSQL", "Tailwind CSS": "Tailwind" };
     const terms = (alias[li.textContent] || li.textContent).split(" / ").map((t) => new RegExp(`(^|[^\\w])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^\\w]|$)`, "i"));
     const used = projects.filter((p) => terms.some((re) => re.test([p.title, p.blurb, ...p.tags].join(" | "))));
-    skillInfo.innerHTML = used.length
+    const ico = li.querySelector("img"), color = getComputedStyle(li.closest(".skill-group")).getPropertyValue("--g").trim() || "#00d4a8";
+    skillInfo.style.setProperty("--g", color);
+    skillInfo.innerHTML = `<span class="si-ico">${ico ? `<img src="${ico.getAttribute("src")}" alt="" width="30" height="30" />` : ""}</span><span>${used.length
       ? `<b>${esc(li.textContent)}</b> shows up in ${used.length} project${used.length > 1 ? "s" : ""}: ${used.map((p) => `<a href="#projects" data-open-project="${p.id}">${p.title}</a>`).join(" · ")}`
-      : `<b>${esc(li.textContent)}</b> comes from my work and teaching, not a listed project. <a href="#experience">See my experience →</a>`;
-    skillInfo.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); // on phones the answer sits below all groups
+      : `<b>${esc(li.textContent)}</b> comes from my work and teaching, not a listed project. <a href="#experience">See my experience →</a>`}</span>`;
+    if (!reduceMotion) skillInfo.animate([{ opacity: 0.3, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }], { duration: 350, easing: "ease-out" });
+    burst(li, color);
+    tappedSkills.add(li.textContent);
+    if (tappedSkills.size >= 5) unlock("toolbox");
+    if (fromRoll) toast(`🎲 ${li.textContent}: ${used.length ? `in ${used.length} project${used.length > 1 ? "s" : ""}` : "from my work and teaching"}`);
+    else skillInfo.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); // on phones the answer sits below all groups
   };
-  li.addEventListener("click", show);
+  skillShow.set(li, show);
+  li.addEventListener("click", () => show());
   li.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(); } });
+});
+// 🎲 pick a random skill (never the one already open), bring it into view and show it
+$("#skillRoll")?.addEventListener("click", () => {
+  const pool = skillLis.filter((x) => !x.classList.contains("on"));
+  const pick = pool[(Math.random() * pool.length) | 0];
+  pick.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+  skillShow.get(pick)(true);
 });
 
 /* ---------- Live GitHub activity (public API, cached per session) ---------- */
@@ -859,7 +901,8 @@ const badges = {
   quiz: ["🎯", "Top fan", "Got 4/4 in the quiz"],
   review: ["✍️", "Critic", "Sent a review"],
   proof: ["🗂️", "Fact checker", "Opened a proof folder"],
-  desk: ["🖐️", "Tidy desk", "Spread the photos on the desk"]
+  desk: ["🖐️", "Tidy desk", "Spread the photos on the desk"],
+  toolbox: ["🧰", "Toolbox tourist", "Tapped 5 different skills"]
 };
 let got = [];
 try { got = JSON.parse(localStorage.getItem("badges") || "[]").filter((k) => badges[k]); } catch (e) {}

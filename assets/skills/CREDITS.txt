@@ -1,0 +1,12 @@
+Skill logos shown on the "What I work with" section.
+
+- Language / framework / tool logos (java, python, typescript, dart, php, react, laravel,
+  tailwindcss, flutter, supabase, tensorflow, opencv, git, figma): Devicon, MIT License.
+  https://github.com/devicons/devicon
+- esp32.svg (Espressif) and microbit.svg: Simple Icons, CC0 1.0.
+  https://github.com/simple-icons/simple-icons
+- sql.svg, team.svg, teaching.svg, huskylens.svg: Lucide, ISC License.
+  https://github.com/lucide-icons/lucide
+
+All product names and logos are trademarks of their respective owners and are used only to
+identify the technologies I work with. No endorsement is implied.

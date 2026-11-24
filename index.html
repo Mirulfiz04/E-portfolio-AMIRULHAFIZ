@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" />
   <!-- set theme before paint to avoid a flash -->
   <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
-  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -331,13 +331,14 @@
     <section class="section wrap" id="skills">
       <p class="eyebrow reveal">04 · Toolbox</p>
       <h2 class="reveal" data-cv="Skills &amp; education">What I work with.</h2>
+      <p class="muted small reveal">Tap any skill to see the projects behind it. <button class="chip" type="button" id="skillRoll">🎲 Surprise me</button></p>
       <div class="skills">
-        <div class="card skill-group reveal"><h3>Languages</h3><ul><li>Java</li><li>Python</li><li>TypeScript</li><li>Dart</li><li>PHP</li><li>SQL</li></ul></div>
-        <div class="card skill-group reveal"><h3>Web &amp; mobile</h3><ul><li>React</li><li>Laravel</li><li>Tailwind CSS</li><li>Flutter</li><li>Supabase</li></ul></div>
-        <div class="card skill-group reveal"><h3>AI &amp; hardware</h3><ul><li>TensorFlow / Keras</li><li>OpenCV</li><li>ESP32</li><li>micro:bit</li><li>HuskyLens</li></ul></div>
-        <div class="card skill-group reveal"><h3>Tools &amp; ways of working</h3><ul><li>Git / GitHub</li><li>Figma</li><li>Team leadership</li><li>Teaching &amp; mentoring</li></ul></div>
+        <div class="card skill-group reveal" style="--g:#3b6fe0"><span class="sk-sticker" aria-hidden="true">⌨️</span><h3>Languages</h3><ul><li><img class="sk-ico" src="assets/skills/java.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Java</li><li><img class="sk-ico" src="assets/skills/python.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Python</li><li><img class="sk-ico" src="assets/skills/typescript.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />TypeScript</li><li><img class="sk-ico" src="assets/skills/dart.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Dart</li><li><img class="sk-ico" src="assets/skills/php.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />PHP</li><li><img class="sk-ico" src="assets/skills/sql.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />SQL</li></ul></div>
+        <div class="card skill-group reveal" style="--g:#d6336c"><span class="sk-sticker" aria-hidden="true">📱</span><h3>Web &amp; mobile</h3><ul><li><img class="sk-ico" src="assets/skills/react.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />React</li><li><img class="sk-ico" src="assets/skills/laravel.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Laravel</li><li><img class="sk-ico" src="assets/skills/tailwindcss.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Tailwind CSS</li><li><img class="sk-ico" src="assets/skills/flutter.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Flutter</li><li><img class="sk-ico" src="assets/skills/supabase.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Supabase</li></ul></div>
+        <div class="card skill-group reveal" style="--g:#d9480f"><span class="sk-sticker" aria-hidden="true">🤖</span><h3>AI &amp; hardware</h3><ul><li><img class="sk-ico" src="assets/skills/tensorflow.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />TensorFlow / Keras</li><li><img class="sk-ico" src="assets/skills/opencv.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />OpenCV</li><li><img class="sk-ico" src="assets/skills/esp32.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />ESP32</li><li><img class="sk-ico" src="assets/skills/microbit.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />micro:bit</li><li><img class="sk-ico" src="assets/skills/huskylens.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />HuskyLens</li></ul></div>
+        <div class="card skill-group reveal" style="--g:#7c3aed"><span class="sk-sticker" aria-hidden="true">🧰</span><h3>Tools &amp; ways of working</h3><ul><li><img class="sk-ico" src="assets/skills/git.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Git / GitHub</li><li><img class="sk-ico" src="assets/skills/figma.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Figma</li><li><img class="sk-ico" src="assets/skills/team.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Team leadership</li><li><img class="sk-ico" src="assets/skills/teaching.svg" alt="" width="22" height="22" loading="lazy" decoding="async" />Teaching &amp; mentoring</li></ul></div>
       </div>
-      <p class="skill-info card" id="skillInfo" aria-live="polite">Tap a skill to see where I’ve used it.</p>
+      <p class="skill-info card" id="skillInfo" aria-live="polite">Nothing picked yet. Tap a skill above, or hit Surprise me.</p>
 
       <div class="edu card reveal">
         <h3>Education</h3>
@@ -432,7 +433,7 @@
   </dialog>
 
   <!-- ACHIEVEMENTS -->
-  <button class="trophy" id="trophy" type="button" aria-label="Achievements"><span aria-hidden="true">🏆</span> <b id="trophyCount">0/13</b></button>
+  <button class="trophy" id="trophy" type="button" aria-label="Achievements"><span aria-hidden="true">🏆</span> <b id="trophyCount">0/14</b></button>
   <dialog class="badges-dlg" id="badges" aria-labelledby="bTitle">
     <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
     <h2 id="bTitle">Achievements</h2>
@@ -476,7 +477,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" integrity="sha384-B2WBjDzEjJpYvhmi2UyEn7rektqkf5suS6sNoyyrf0EBAwBHdkiXxIlU0V5Ru2ed" crossorigin="anonymous" defer></script>
-  <script src="js/script.js?v=5" defer></script>
+  <script src="js/script.js?v=6" defer></script>
   <script src="js/motion.js?v=5" defer></script>
 </body>
 </html>

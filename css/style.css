@@ -229,10 +229,26 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .p-more::after { content: ""; position: absolute; inset: 0; }
 
 /* ===== Skills ===== */
-.skills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px; }
-.skill-group ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.skill-group li { padding: 6px 12px; font-size: 0.9rem; border: 1px solid var(--border); border-radius: 999px; transition: transform 0.2s var(--ease), border-color 0.2s, color 0.2s; }
-.skill-group li:hover { transform: translateY(-3px); border-color: var(--accent); color: var(--accent); }
+.skills { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 16px; margin-top: 28px; }
+/* each group has its own colour (--g, set inline), a coloured top edge and a bobbing sticker */
+.skill-group { --g: var(--accent); padding-top: 30px; border-top: 4px solid var(--g); background: linear-gradient(160deg, color-mix(in srgb, var(--g) 12%, var(--surface)), var(--surface) 60%); }
+.skill-group h3 { padding-right: 44px; }
+.sk-sticker { position: absolute; top: -18px; right: 14px; display: grid; place-items: center; width: 46px; height: 46px; font-size: 1.5rem; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--border); box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--g) 55%, transparent); rotate: 8deg; animation: bob 3.4s ease-in-out infinite; transition: rotate 0.4s var(--spring), scale 0.4s var(--spring); }
+@keyframes bob { 50% { translate: 0 -5px; } }
+.skill-group ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 9px; }
+.skill-group li { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 6px; font-size: 0.9rem; background: color-mix(in srgb, var(--bg-2) 75%, transparent); border: 1px solid color-mix(in srgb, var(--g) 28%, var(--border)); border-radius: 999px; box-shadow: 0 2px 0 color-mix(in srgb, var(--g) 18%, transparent); transition: transform 0.35s var(--spring), border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s; }
+/* logo on a white tile so it reads on both themes and on the coloured "selected" pill */
+.sk-ico { width: 24px; height: 24px; flex: none; padding: 3px; object-fit: contain; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(10, 20, 40, 0.1); transition: transform 0.35s var(--spring); }
+/* pills pop in one after another when their card scrolls into view (--n is set by js) */
+@keyframes pill-pop { from { opacity: 0; transform: translateY(14px) scale(0.4) rotate(-12deg); } }
+.skill-group.in li { animation: pill-pop 0.6s var(--spring) backwards; animation-delay: calc(var(--n, 0) * 55ms + 250ms); }
+/* hover only where a real pointer exists; on touch a tap would leave it stuck on */
+@media (hover: hover) {
+  .skill-group:hover .sk-sticker { rotate: -8deg; scale: 1.14; }
+  .skill-group li:hover { transform: translateY(-4px) rotate(-2.5deg) scale(1.05); border-color: var(--g); color: color-mix(in srgb, var(--g) 55%, var(--text)); box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--g) 70%, transparent); }
+  .skill-group li:hover .sk-ico { transform: rotate(-12deg) scale(1.15); }
+}
+.skill-group li:active { transform: translateY(1px) scale(0.95); box-shadow: none; }
 .edu { margin-top: 20px; }
 .edu ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
 .edu li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-bottom: 14px; border-bottom: 1px dashed var(--border); }
@@ -244,8 +260,11 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .edu li:hover .edu-logo { transform: rotate(-8deg) scale(1.12); }
 /* skills you can tap */
 .skill-group li { cursor: pointer; }
-.skill-group li.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-.skill-info { margin: 16px 0 0; padding: 14px 18px; color: var(--muted); }
+.skill-group li.on { background: var(--g); border-color: var(--g); color: #fff; box-shadow: 0 8px 18px -8px var(--g); }
+.skill-group li.on .sk-ico { transform: rotate(-12deg) scale(1.15); }
+.skill-info { display: flex; align-items: center; gap: 14px; margin: 16px 0 0; padding: 14px 18px; color: var(--muted); box-shadow: inset 4px 0 0 var(--g, transparent); }
+.si-ico { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(10, 20, 40, 0.1), 0 6px 14px -6px var(--g, transparent); }
+.si-ico img { width: 30px; height: 30px; object-fit: contain; }
 .skill-info b { color: var(--text); }
 .skill-info a { color: var(--accent); }
 /* evidence thumbnails on experience cards */
@@ -341,19 +360,25 @@ dialog[open] { animation: rise 0.35s var(--ease); }
 
 /* ===== Proof folders ===== */
 .folders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 28px; }
-.folder { position: relative; height: 190px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--text); text-align: left; }
+.folder { --lift-1: -44px; --lift-2: -36px; --persp: 600px; --tilt: -14deg; position: relative; height: 190px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--text); text-align: left; }
 .folder::before { content: ""; position: absolute; left: 0; top: 0; width: 42%; height: 30px; border-radius: 12px 12px 0 0; background: color-mix(in srgb, var(--accent) 55%, var(--bg-2)); }
-.f-peek { position: absolute; inset: 18px 0 0; border-radius: 0 14px 14px 14px; background: color-mix(in srgb, var(--accent) 55%, var(--bg-2)); }
+/* clip-path only trims the bottom edge: photos may lift out of the top when opened, but never spill under the folder onto the next one */
+.f-peek { position: absolute; inset: 18px 0 0; border-radius: 0 14px 14px 14px; background: color-mix(in srgb, var(--accent) 55%, var(--bg-2)); clip-path: inset(-90px -30px 0 -30px); }
 .f-peek img { position: absolute; width: 46%; aspect-ratio: 4 / 3; object-fit: cover; top: 18px; border: 4px solid #fff; border-radius: 4px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); transition: transform 0.45s var(--ease); }
 .f-peek img:first-child { left: 14%; transform: rotate(-6deg); }
 .f-peek img:nth-child(2) { right: 14%; transform: rotate(5deg); }
 .f-front { position: absolute; inset: 70px 0 0; display: grid; align-content: end; gap: 2px; padding: 16px 18px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 22%, var(--bg-2)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); backdrop-filter: blur(6px); transition: transform 0.45s var(--ease); transform-origin: bottom; }
 .f-ico { font-size: 1.5rem; }
 .f-front small { color: var(--muted); font: 0.75rem var(--mono); }
-.folder:hover .f-peek img:first-child, .folder[aria-expanded="true"] .f-peek img:first-child { transform: translateY(-44px) rotate(-10deg); }
-.folder:hover .f-peek img:nth-child(2), .folder[aria-expanded="true"] .f-peek img:nth-child(2) { transform: translateY(-36px) rotate(9deg); }
-.folder:hover .f-front, .folder[aria-expanded="true"] .f-front { transform: perspective(600px) rotateX(-14deg); }
-.folder[aria-expanded="true"] .f-front { border-color: var(--accent); }
+.folder[aria-expanded="true"] .f-peek img:first-child { transform: translateY(var(--lift-1)) rotate(-10deg); }
+.folder[aria-expanded="true"] .f-peek img:nth-child(2) { transform: translateY(var(--lift-2)) rotate(9deg); }
+.folder[aria-expanded="true"] .f-front { transform: perspective(var(--persp)) rotateX(var(--tilt)); border-color: var(--accent); }
+/* hover only on devices that really hover: on a phone a tap leaves :hover stuck on, which tilted and widened the folder */
+@media (hover: hover) {
+  .folder:hover .f-peek img:first-child { transform: translateY(var(--lift-1)) rotate(-10deg); }
+  .folder:hover .f-peek img:nth-child(2) { transform: translateY(var(--lift-2)) rotate(9deg); }
+  .folder:hover .f-front { transform: perspective(var(--persp)) rotateX(var(--tilt)); }
+}
 .folder:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 14px; }
 .fold-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-top: 22px; }
 .f-item, .f-doc { display: grid; gap: 8px; align-content: start; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-2); color: var(--text); font: 0.82rem/1.35 var(--font); text-align: left; text-decoration: none; cursor: zoom-in; animation: spill 0.45s var(--ease) backwards; animation-delay: calc(var(--d) * 60ms); transition: transform 0.25s var(--ease), border-color 0.25s; }
@@ -546,8 +571,10 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .more-lessons:not([hidden]) { display: flex; margin: 16px auto 0; }
   .tabs { flex-wrap: wrap; }
   .folders { grid-template-columns: 1fr; gap: 14px; }
-  .folder { height: 150px; }
-  .f-front { inset: 56px 0 0; }
+  /* fixed photo size (not % of width) so they always sit behind the front panel, whatever the phone width */
+  .folder { height: 160px; --lift-1: -28px; --lift-2: -22px; --persp: 1200px; --tilt: -10deg; }
+  .f-peek img { top: 12px; width: 120px; height: 90px; }
+  .f-front { inset: 64px 0 0; }
   .fold-body { grid-template-columns: 1fr 1fr; }
   .moments.desk { height: 480px; }
   .moments.desk .moment { width: 150px; }
@@ -616,8 +643,10 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .skills { grid-template-columns: repeat(2, 1fr); gap: 4px 16px; margin-top: 4px; }
   .skill-group h3 { margin-bottom: 2px; }
   .skill-group ul { gap: 4px; }
-  .skill-group li { padding: 0; border: 0; font-size: 9.5pt; }
+  .skill-group li { display: block; padding: 0; border: 0; background: none; box-shadow: none; font-size: 9.5pt; }
   .skill-group li:not(:last-child)::after { content: " ·"; }
+  .skill-group h3 { padding-right: 0; }
+  .sk-ico, .sk-sticker { display: none; }
   .edu { margin-top: 8px; }
   .edu li { padding-bottom: 4px; }
   .contact { text-align: left; padding: 0; }
