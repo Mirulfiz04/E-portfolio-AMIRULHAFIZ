@@ -1,0 +1,13 @@
+{
+  "name": "portfolio-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Guestbook and visit counter API for the portfolio (AWS SAM). No npm dependencies: the Lambda Node runtime already includes AWS SDK v3, and the tests use fakes.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
