@@ -117,3 +117,17 @@ test.describe("Old page URLs (redirect stubs)", () => {
     });
   }
 });
+
+test.describe("Internal files are not published", () => {
+  // scripts/serve.mjs hides exactly what _config.yml `exclude:` lists, like Jekyll does on GitHub Pages
+  test("developer files return 404", async ({ request }) => {
+    for (const p of ["/tests/site.spec.js", "/scripts/serve.mjs", "/package.json", "/playwright.config.js", "/CONTRIBUTING.md", "/.github/workflows/ci.yml"]) {
+      expect((await request.get(p)).status(), p).toBe(404);
+    }
+  });
+
+  test("docs/ (QA plan, design specs) is not published", async ({ request }) => {
+    test.fail(true, "B-10: `docs` is missing from the exclude list in _config.yml, so internal QA and design notes would go live");
+    expect((await request.get("/docs/qa/test-plan.md")).status()).toBe(404);
+  });
+});
