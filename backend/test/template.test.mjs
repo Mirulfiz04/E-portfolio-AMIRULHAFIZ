@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 // Guardrails on template.yaml. Plain text checks, since parsing YAML would need a dependency.
-const t = readFileSync(new URL("../template.yaml", import.meta.url), "utf8");
+const t = readFileSync(new URL("../template.yaml", import.meta.url), "utf8").replace(/\r\n/g, "\n"); // Windows checkouts may use CRLF
 const count = (re) => (t.match(re) ?? []).length;
 // A resource block runs from "  Name:" to the next line indented by exactly two spaces. Empty means a typo, so fail loudly.
 const block = (name) => {
