@@ -67,7 +67,7 @@ Then open http://localhost:8000.
 
 The site has no build step, but every change is still checked before it ships: ESLint, HTML validation, a missing-file check and real-browser tests at phone and desktop size run in GitHub Actions on every pull request. Run the same checks locally with `npm ci && npm run check`.
 
-Work is tracked as GitHub issues and moves through issue → branch → pull request → CI → merge → deploy. The full process, including the one-time repository settings, is in [CONTRIBUTING.md](CONTRIBUTING.md).
+Work is tracked as GitHub issues and moves through issue → branch → pull request → CI → merge → deploy. The full process, including the one-time repository settings, is in [CONTRIBUTING.md](CONTRIBUTING.md), and [CHANGELOG.md](CHANGELOG.md) is the dated timeline of everything that has changed.
 
 ## Deploy
 

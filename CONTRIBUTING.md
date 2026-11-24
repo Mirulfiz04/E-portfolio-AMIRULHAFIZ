@@ -44,7 +44,7 @@ npm run check      # everything below, in order
 - Reference the issue: `Closes #7` (in the commit or the pull request).
 
 ## 5. Open a pull request
-Fill in the template. Keep it a **draft** until CI is green. The pull request must say `Closes #N` **when it is created or edited before merging**: GitHub only reads closing keywords at the moment of merge.
+Fill in the template and add one line under **Unreleased** in [`CHANGELOG.md`](CHANGELOG.md), which is the project's timeline. Keep it a **draft** until CI is green. The pull request must say `Closes #N` **when it is created or edited before merging**: GitHub only reads closing keywords at the moment of merge.
 
 ## 6. CI must pass
 `.github/workflows/ci.yml` runs on every pull request and on every push to `main`:
@@ -65,7 +65,7 @@ Merging into `main` triggers `.github/workflows/jekyll-gh-pages.yml`, which publ
 These are settings in GitHub, not code, so they cannot be committed:
 
 1. **Require CI before merging.** Settings → Rules → Rulesets → New branch ruleset → target `main` → enable *Require a pull request before merging* and *Require status checks to pass*, then add **CI passed**. Without this, a red pull request can still be merged.
-2. **Project board.** Repository → Projects → New project → Board layout → add the open issues. Move cards Backlog → In progress → Done as the pull request moves.
+2. **Project board.** Repository → Projects → New project → Board layout → add the open issues. Move cards Backlog → In progress → Done as the pull request moves. For a visual timeline, add a second view with the **Roadmap** layout and set Start and Target date fields on the cards.
 3. **Dependabot.** `.github/dependabot.yml` is already configured; make sure *Dependabot alerts* and *security updates* are on under Settings → Code security.
 
 ## Why the checks block third-party CDNs

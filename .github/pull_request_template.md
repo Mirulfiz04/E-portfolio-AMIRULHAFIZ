@@ -13,6 +13,7 @@ Closes #
 - [ ] Looked at it on a phone-sized screen and on desktop
 - [ ] Looked at it in light and dark theme
 - [ ] Added or updated a test if this fixes a bug or adds behaviour
+- [ ] Added one line under **Unreleased** in `CHANGELOG.md`
 
 ## Screenshots
 
