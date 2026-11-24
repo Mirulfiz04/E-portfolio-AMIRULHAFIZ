@@ -70,7 +70,7 @@ test("R9 openapi.yaml documents every route and the error codes of POST /reviews
     const start = api.indexOf(`\n  ${path}:\n`);
     assert.notEqual(start, -1, `${path} missing from openapi.yaml`);
     const rest = api.slice(start + 1);
-    const end = rest.slice(1).search(/\n(  \/\S+:|components:)\n/);
+    const end = rest.slice(1).search(/\n( {2}\/\S+:|components:)\n/);
     const block = end === -1 ? rest : rest.slice(0, end + 1);
     assert.match(block, new RegExp(`\\n    ${method.toLowerCase()}:\\n`), `${method} ${path} missing`);
   }

@@ -1,7 +1,9 @@
 // Server-side validation. The limits match the form on the site (maxlength 40/60/500),
 // but the browser is never trusted: this is the real check.
 const LIMITS = { name: [1, 40], role: [0, 60], comment: [5, 500] };
+// eslint-disable-next-line no-control-regex -- matching control characters is the purpose
 const CONTROL_MULTILINE = /[\u0000-\u0008\u000B-\u001F\u007F]/; // everything except tab and newline
+// eslint-disable-next-line no-control-regex -- matching control characters is the purpose
 const CONTROL_SINGLE = /[\u0000-\u001F\u007F]/;
 
 function text(value, field, multiline = false) {

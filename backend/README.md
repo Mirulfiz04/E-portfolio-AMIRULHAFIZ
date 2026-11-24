@@ -133,6 +133,12 @@ to the review form (what is stored, that it is deleted after 30 days if not appr
 A reviewer who asks to be removed: run the `delete` moderation action for their review id (found
 with `list`, or from the public page if approved). Removing everything: [Teardown](#teardown).
 
+### Known limits
+
+- **The pending cap can be used against you.** With 200 unapproved reviews waiting, new reviews get `503`. A spammer who fills the cap blocks real reviewers until you reject the spam (`reject` frees a slot at once) or the 30-day expiry removes it. Without tracking IPs there is no way to tell spam from real visitors at the API. Check the pending list now and then; raise `MaxPending` only if you accept more stored spam.
+- **The site must change before it can use this API.** Today the form sends `FormData` (or a `mailto:` link); this API accepts only `application/json`. That conversion belongs to the later site branch.
+- **The visit counter starts at 0.** The abacus total is not carried over. If you want to keep the current number, set it once after deploy with a one-off `aws dynamodb update-item` on the item `COUNTER#visits` (put the key and values in a JSON file to avoid PowerShell quoting problems). Until the site is switched, the two counters are independent.
+
 ## What each AWS service teaches
 
 | Service | What you learn building this |

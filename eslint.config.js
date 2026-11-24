@@ -24,5 +24,10 @@ export default [
     // tooling: tests, scripts and config run in Node as ES modules
     files: ["tests/**/*.js", "scripts/**/*.mjs", "*.config.js"],
     languageOptions: { ecmaVersion: 2023, sourceType: "module", globals: { ...globals.node, ...globals.browser } }
+  },
+  {
+    // the AWS backend (backend/): Lambda handlers and their tests, ES modules on Node 22
+    files: ["backend/**/*.mjs"],
+    languageOptions: { ecmaVersion: 2023, sourceType: "module", globals: globals.node }
   }
 ];
