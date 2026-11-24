@@ -76,15 +76,35 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  # The AWS backend (backend/) has no npm dependencies and its tests use fakes, so there is nothing to install
+  # and no AWS credentials are involved.
+  backend-tests:
+    name: Backend unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run the backend tests
+        working-directory: backend
+        run: node --test
+
   # One stable name to require in branch protection, whatever jobs are added later.
   ci-passed:
     name: CI passed
     if: ${{ always() }}
-    needs: [static-checks, browser-tests]
+    needs: [static-checks, browser-tests, backend-tests]
     runs-on: ubuntu-latest
     steps:
       - name: Fail unless every job succeeded
         run: |
           echo "static-checks: ${{ needs.static-checks.result }}"
           echo "browser-tests: ${{ needs.browser-tests.result }}"
-          test "${{ needs.static-checks.result }}" = "success" && test "${{ needs.browser-tests.result }}" = "success"
+          echo "backend-tests: ${{ needs.backend-tests.result }}"
+          test "${{ needs.static-checks.result }}" = "success" && test "${{ needs.browser-tests.result }}" = "success" && test "${{ needs.backend-tests.result }}" = "success"
