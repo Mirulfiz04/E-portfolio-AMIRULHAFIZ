@@ -330,6 +330,28 @@ function countUp(el) {
 }
 if (!reduceMotion) $$("[data-count]").forEach(countUp);
 
+/* ---------- Hero mood: one object shared by the MEDS widget (sets it) and the network background (follows it) ---------- */
+// [node speed, link distance in px, tint token]. Only the site's two accents are used, so both themes stay readable.
+const moods = { Calm: [0.5, 150, "--accent-2"], Neutral: [0.8, 130, "--accent"], Happy: [1, 130, "--accent"], Surprised: [1.5, 120, "--accent-2"], Excited: [1.9, 110, "--accent"] };
+const mood = {
+  chosen: null, speed: 1, link: 130, tintVar: "--accent", tint: "", from: null, to: null, t0: 0, ringAt: 0, redraw() {},
+  refreshTint() { this.tint = getComputedStyle(root).getPropertyValue(this.tintVar).trim(); }, // cached: read when the mood or theme changes, not every frame
+  set(name) { // a mood name, or null for the automatic cycle
+    const [speed, link, tintVar] = name ? moods[name] : [1, 130, "--accent"];
+    this.chosen = name; this.tintVar = tintVar; this.refreshTint();
+    if (reduceMotion) { this.speed = speed; this.link = link; this.redraw(); return; } // no easing, ring or movement
+    this.from = { speed: this.speed, link: this.link }; this.to = { speed, link };
+    this.t0 = performance.now(); this.ringAt = name ? this.t0 : 0;
+  },
+  step(now) { // ease speed and link distance to the target over 800 ms
+    if (!this.to) return;
+    const p = Math.min(1, (now - this.t0) / 800), e = 1 - (1 - p) ** 3;
+    this.speed = this.from.speed + (this.to.speed - this.from.speed) * e;
+    this.link = this.from.link + (this.to.link - this.from.link) * e;
+    if (p === 1) this.to = null;
+  }
+};
+
 /* ---------- Hero: interactive "neural net" background ---------- */
 (function net() {
   const cv = $("#net"), ctx = cv.getContext("2d");
@@ -342,29 +364,38 @@ if (!reduceMotion) $$("[data-count]").forEach(countUp);
     const n = Math.round(Math.min(90, (w * h) / 16000));
     nodes = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35 }));
   }
-  function draw() {
-    const accent = getComputedStyle(root).getPropertyValue("--accent").trim();
+  function draw(now = performance.now()) {
+    mood.step(now);
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = ctx.strokeStyle = accent;
+    ctx.fillStyle = ctx.strokeStyle = mood.tint;
+    // a chosen mood sends one ring out from the centre; it nudges nodes up to 12 px for 600 ms (drawn offset only, positions are untouched)
+    const rp = mood.ringAt ? (now - mood.ringAt) / 600 : 2, ringOn = rp >= 0 && rp < 1;
+    const cx = w / 2, cy = h / 2, R = Math.hypot(cx, cy) * (1 - (1 - rp) ** 3);
     for (const a of nodes) {
       if (!reduceMotion) {
-        a.x += a.vx; a.y += a.vy;
+        a.x += a.vx * mood.speed; a.y += a.vy * mood.speed;
         if (a.x < 0 || a.x > w) a.vx *= -1;
         if (a.y < 0 || a.y > h) a.vy *= -1;
         const dx = mouse.x - a.x, dy = mouse.y - a.y, d = Math.hypot(dx, dy);
         if (d < 160) { a.x -= dx * 0.012; a.y -= dy * 0.012; } // nodes shy away from the cursor
       }
+      a.ox = a.oy = 0;
+      if (ringOn) {
+        const rx = a.x - cx, ry = a.y - cy, rd = Math.hypot(rx, ry) || 1, push = 12 * Math.max(0, 1 - Math.abs(rd - R) / 60) * (1 - rp);
+        a.ox = (rx / rd) * push; a.oy = (ry / rd) * push;
+      }
     }
     for (let i = 0; i < nodes.length; i++) {
-      const a = nodes[i];
+      const a = nodes[i], ax = a.x + a.ox, ay = a.y + a.oy;
       for (let j = i + 1; j < nodes.length; j++) {
-        const b = nodes[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 130) { ctx.globalAlpha = (1 - d / 130) * 0.35; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+        const b = nodes[j], d = Math.hypot(ax - (b.x + b.ox), ay - (b.y + b.oy));
+        if (d < mood.link) { ctx.globalAlpha = (1 - d / mood.link) * 0.35; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(b.x + b.ox, b.y + b.oy); ctx.stroke(); }
       }
       const md = Math.hypot(a.x - mouse.x, a.y - mouse.y);
       ctx.globalAlpha = md < 160 ? 0.9 : 0.5;
-      ctx.beginPath(); ctx.arc(a.x, a.y, md < 160 ? 2.6 : 1.6, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(ax, ay, md < 160 ? 2.6 : 1.6, 0, 7); ctx.fill();
     }
+    if (ringOn) { ctx.globalAlpha = 0.5 * (1 - rp); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke(); ctx.lineWidth = 1; }
     ctx.globalAlpha = 1;
     if (running && !reduceMotion) requestAnimationFrame(draw);
   }
@@ -374,9 +405,11 @@ if (!reduceMotion) $$("[data-count]").forEach(countUp);
   addEventListener("resize", () => { size(); if (reduceMotion) draw(); });
   // pause when the hero is off screen
   new IntersectionObserver(([e]) => { const was = running; running = e.isIntersecting; if (running && !was && !reduceMotion) draw(); }).observe(hero);
-  sysLight.addEventListener("change", () => reduceMotion && draw());
-  size(); draw();
-  $("#themeBtn").addEventListener("click", () => reduceMotion && setTimeout(draw, 50));
+  mood.redraw = draw;
+  const retint = () => { mood.refreshTint(); if (reduceMotion) draw(); }; // the cached tint follows the theme; the loop picks it up on its next frame
+  sysLight.addEventListener("change", retint);
+  new MutationObserver(retint).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  mood.refreshTint(); size(); draw();
 })();
 
 /* ---------- Hero: MEDS widget (simulated) ---------- */
@@ -391,20 +424,31 @@ if (!reduceMotion) $$("[data-count]").forEach(countUp);
     ecg.setAttribute("points", pts.map((v, i) => `${i * 2},${v}`).join(" "));
   }
   for (let i = 0; i < 60; i++) ecgStep();
-  function next() {
-    si = (si + 1) % states.length;
+  function show(i) {
+    si = i;
     const [f, name, target] = states[si];
     face.textContent = f; emo.textContent = name;
     conf.textContent = `${84 + Math.floor(Math.random() * 14)}%`;
     bpm = target;
+    hr.textContent = target; // set directly: the heart-rate ticker below does not run with reduced motion
     face.classList.remove("pop"); void face.offsetWidth; face.classList.add("pop");
   }
+  const next = () => show((si + 1) % states.length);
   if (!reduceMotion) {
     setInterval(ecgStep, 60);
     setInterval(() => { hr.textContent = bpm + Math.round((Math.random() - 0.5) * 4); spo2.textContent = 97 + Math.round(Math.random() * 2); }, 900);
   }
-  setInterval(next, 3200);
-  face.addEventListener("click", next); // tiny extra: click the face to change it
+  let cycle = setInterval(next, 3200);
+  // "Set the mood": a chosen mood stops the automatic cycle and tints the hero network (see `mood`); pressing it again resumes the cycle
+  const moodBtns = $$(".mood-btn");
+  moodBtns.forEach((b) => b.addEventListener("click", () => {
+    const name = b.dataset.mood, again = mood.chosen === name;
+    moodBtns.forEach((x) => x.setAttribute("aria-pressed", !again && x === b));
+    clearInterval(cycle);
+    if (again) { mood.set(null); cycle = setInterval(next, 3200); return; }
+    show(states.findIndex((s) => s[1] === name));
+    mood.set(name);
+  }));
   // 3D tilt following the cursor
   if (!reduceMotion && matchMedia("(hover: hover)").matches) {
     card.addEventListener("pointermove", (e) => {

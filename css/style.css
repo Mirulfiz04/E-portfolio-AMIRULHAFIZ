@@ -165,6 +165,11 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .pill-sm { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
 .meds-face { font-size: 4.2rem; line-height: 1.2; text-align: center; margin: 12px 0 4px; }
 .meds-face.pop { animation: pop 0.5s var(--ease); }
+/* "Set the mood": one row of five 44px buttons (236px with the gaps) even at 320px */
+.mood { display: flex; justify-content: center; gap: 4px; margin: 0 0 8px; }
+.mood-btn { flex: none; width: 44px; height: 44px; padding: 0; font-size: 1.3rem; line-height: 1; color: var(--text); background: var(--surface); border: 1px solid var(--muted); border-radius: 12px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
+.mood-btn:hover { border-color: var(--accent); }
+.mood-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 @keyframes pop { 40% { transform: scale(1.25) rotate(-8deg); } }
 .meds-label { text-align: center; }
 .meds-vitals { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
