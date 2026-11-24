@@ -231,8 +231,11 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 /* ===== Skills ===== */
 .skills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px; }
 .skill-group ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.skill-group li { padding: 6px 12px; font-size: 0.9rem; border: 1px solid var(--border); border-radius: 999px; transition: transform 0.2s var(--ease), border-color 0.2s, color 0.2s; }
+.skill-group li { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 6px; font-size: 0.9rem; border: 1px solid var(--border); border-radius: 999px; transition: transform 0.2s var(--ease), border-color 0.2s, color 0.2s; }
 .skill-group li:hover { transform: translateY(-3px); border-color: var(--accent); color: var(--accent); }
+/* logo on a white tile so it reads on both themes and on the green "selected" pill */
+.sk-ico { width: 24px; height: 24px; flex: none; padding: 3px; object-fit: contain; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(10, 20, 40, 0.1); transition: transform 0.3s var(--ease); }
+.skill-group li:hover .sk-ico, .skill-group li.on .sk-ico { transform: rotate(-10deg) scale(1.12); }
 .edu { margin-top: 20px; }
 .edu ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
 .edu li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-bottom: 14px; border-bottom: 1px dashed var(--border); }
@@ -624,8 +627,9 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .skills { grid-template-columns: repeat(2, 1fr); gap: 4px 16px; margin-top: 4px; }
   .skill-group h3 { margin-bottom: 2px; }
   .skill-group ul { gap: 4px; }
-  .skill-group li { padding: 0; border: 0; font-size: 9.5pt; }
+  .skill-group li { display: block; padding: 0; border: 0; font-size: 9.5pt; }
   .skill-group li:not(:last-child)::after { content: " ·"; }
+  .sk-ico { display: none; }
   .edu { margin-top: 8px; }
   .edu li { padding-bottom: 4px; }
   .contact { text-align: left; padding: 0; }
