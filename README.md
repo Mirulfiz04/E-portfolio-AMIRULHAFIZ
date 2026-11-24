@@ -1,6 +1,6 @@
 # Amirul Hafiz — Portfolio
 
-[![CI](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/ci.yml/badge.svg)](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/ci.yml)
+[![CI/CD](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/jekyll-gh-pages.yml/badge.svg)](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/workflows/jekyll-gh-pages.yml)
 
 Single-page portfolio in **plain HTML, CSS and JavaScript**. No build step and no frameworks. Optional motion comes from GSAP + ScrollTrigger and Lenis (CDN, pinned with integrity hashes) in `js/motion.js`; if they fail to load or the visitor prefers reduced motion, the site works without them.
 
@@ -71,4 +71,10 @@ Work is tracked as GitHub issues and moves through issue → branch → pull req
 
 ## Deploy
 
-GitHub Pages deploys `main` through `.github/workflows/jekyll-gh-pages.yml`.
+Merging into `main` starts the CI/CD pipeline in `.github/workflows/jekyll-gh-pages.yml`:
+
+```
+CI (lint, HTML, assets, browser tests)  →  build  →  deploy to GitHub Pages  →  verify the live site
+```
+
+Each stage waits for the one before it, so a change that fails CI is never deployed, and a final check confirms the live site is serving that exact commit. Pull requests run the CI stage only (`.github/workflows/ci.yml`).

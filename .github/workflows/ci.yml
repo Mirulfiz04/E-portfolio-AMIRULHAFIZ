@@ -2,12 +2,11 @@ name: CI
 
 # Checks every change before it can reach the live site:
 #   - on every pull request
-#   - on every push to main (keeps the README badge honest)
-#   - by hand from the Actions tab, or called from another workflow
+#   - as the first stage of the CI/CD pipeline (jekyll-gh-pages.yml), which calls this workflow on every push to main
+#     and only builds and deploys if it passes. That is why there is no `push` trigger here: it would run twice.
+#   - by hand from the Actions tab
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_call:
   workflow_dispatch:
 

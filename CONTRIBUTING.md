@@ -47,7 +47,7 @@ npm run check      # everything below, in order
 Fill in the template and add one line under **Unreleased** in [`CHANGELOG.md`](CHANGELOG.md), which is the project's timeline. Keep it a **draft** until CI is green. The pull request must say `Closes #N` **when it is created or edited before merging**: GitHub only reads closing keywords at the moment of merge.
 
 ## 6. CI must pass
-`.github/workflows/ci.yml` runs on every pull request and on every push to `main`:
+`.github/workflows/ci.yml` runs on every pull request, and runs again as the first stage of the pipeline below once the change reaches `main`:
 
 1. **Lint, HTML and assets**: the first three commands in the table above.
 2. **Browser tests (phone and desktop)**: Chromium, same tests as `npm test`.
@@ -55,8 +55,26 @@ Fill in the template and add one line under **Unreleased** in [`CHANGELOG.md`](C
 
 If a run fails, open the run, read the failing step, fix it on the same branch and push. The Playwright report is attached to failed runs.
 
-## 7. Merge and deploy
-Merging into `main` triggers `.github/workflows/jekyll-gh-pages.yml`, which publishes to GitHub Pages. Reload the live site (close and reopen the tab on a phone) and tick off any "after merge" checks in the pull request.
+## 7. Merge: the CI/CD pipeline puts it live
+Merging into `main` starts the pipeline in `.github/workflows/jekyll-gh-pages.yml`. Each stage waits for the one before it:
+
+```
+CI  →  Build site  →  Deploy to GitHub Pages  →  Verify the live site
+```
+
+| Stage | What it does |
+|---|---|
+| **CI** | Runs the same checks as the pull request (lint, HTML, assets, browser tests). If anything fails, nothing is built or deployed and the site keeps serving the last good version. |
+| **Build site** | Jekyll builds the site. Tests and tooling are left out (`_config.yml`). |
+| **Deploy to GitHub Pages** | Publishes the build. It only ever deploys from `main`: running the pipeline by hand on another branch runs CI and build but never deploys. |
+| **Verify the live site** | `scripts/verify-live.mjs` fetches the live site and fails if it is not serving this commit (same versioned CSS and JS), if any linked file is missing, if the 404 page is wrong, or if a developer file such as `package.json` is public. It retries for about two minutes while GitHub Pages switches over. |
+
+Watch it in the **Actions** tab, then reload the live site (close and reopen the tab on a phone) and tick off any "after merge" checks in the pull request. Every deployment is also listed under **Deployments** on the repository page.
+
+If the pipeline is red, read the failing stage. A red **Verify** stage means the deploy happened but the live site is not what was expected: treat it as an incident and roll back.
+
+### Rolling back
+Open the merged pull request and press **Revert**. GitHub opens a new pull request that undoes it; merge that and the pipeline checks and redeploys the previous state. The same pipeline protects the rollback.
 
 ---
 

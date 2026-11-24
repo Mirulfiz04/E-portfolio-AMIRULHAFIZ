@@ -11,6 +11,8 @@ Pull request [#9](../../pull/9)
 
 - **Fixed:** the **Download CV** buttons never opened the print dialog, because the terminal's `print()` helper overwrote `window.print` ([#7](../../issues/7))
 - **Added:** CI on every pull request and push to `main`: ESLint, HTML validation, a missing-file check and browser tests at phone and desktop size ([#6](../../issues/6))
+- **Added:** a CI/CD pipeline: pushing to `main` now runs CI, then build, then deploy, then verifies the live site. A failing check stops the deploy, and nothing deploys from any other branch ([#8](../../issues/8))
+- **Added:** `scripts/verify-live.mjs`, the post-deploy check that proves the live site is this commit and that developer files are not public ([#8](../../issues/8))
 - **Added:** issue forms, a pull request template, Dependabot, `CODEOWNERS` and `CONTRIBUTING.md` describing the whole workflow ([#6](../../issues/6))
 - **Added:** this changelog and timeline
 - **Changed:** buttons and inputs now have explicit types so `index.html` is valid HTML
@@ -32,6 +34,7 @@ Pull request [#9](../../pull/9)
 | 21:01 | Follow-up recorded: gate the deploy on CI | [#8](../../issues/8) |
 | 21:02 | CI workflow, templates, Dependabot and docs added; pull request opened as a draft; first CI run started | [PR #9](../../pull/9), `794551e` |
 | 21:03 | First CI run on GitHub passed: lint, HTML and assets, browser tests, and the **CI passed** summary | [PR #9](../../pull/9) |
+| 21:08 | CI/CD pipeline added: deploy now waits for CI, deploys only from `main`, then verifies the live site | [#8](../../issues/8), [PR #9](../../pull/9) |
 
 ## 23 Nov 2026: guestbook, photos as proof, and motion
 
@@ -70,5 +73,5 @@ Pull request [#9](../../pull/9)
 | [#5](../../issues/5) | To do | Check Proof folders and Skills on a real phone after deploy | 24 Nov 20:50 | open |
 | [#6](../../issues/6) | Enhancement | Add CI, automated tests and a proper contribution workflow | 24 Nov 20:53 | open, closes with PR #9 |
 | [#7](../../issues/7) | Bug | Download CV button does nothing: `print()` overwrites `window.print` | 24 Nov 20:53 | open, closes with PR #9 |
-| [#8](../../issues/8) | Enhancement | Gate the GitHub Pages deploy on CI | 24 Nov 21:01 | open |
+| [#8](../../issues/8) | Enhancement | Gate the GitHub Pages deploy on CI | 24 Nov 21:01 | open, closes with PR #9 |
 | [PR #9](../../pull/9) | Pull request | Add CI, automated tests and a contribution workflow; fix broken Download CV | 24 Nov 21:02 | draft |

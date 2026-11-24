@@ -9,7 +9,8 @@
     "validate:html": "html-validate \"*.html\"",
     "check:assets": "node scripts/check-assets.mjs",
     "test": "playwright test",
-    "check": "npm run lint && npm run validate:html && npm run check:assets && npm test"
+    "check": "npm run lint && npm run validate:html && npm run check:assets && npm test",
+    "verify:live": "node scripts/verify-live.mjs"
   },
   "engines": {
     "node": ">=20"
