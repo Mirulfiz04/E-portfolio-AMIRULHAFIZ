@@ -582,6 +582,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .f-peek img { top: 12px; width: 120px; height: 90px; }
   .f-front { inset: 64px 0 0; }
   .fold-body { grid-template-columns: 1fr 1fr; }
+  .folders > .fold-body { margin-top: 0; } /* on one column the files sit between two folders, 14px from each like the folders themselves */
   .moments.desk { height: 480px; }
   .moments.desk .moment { width: 150px; }
   .footer { padding-bottom: 80px; } /* room for the floating trophy */
