@@ -1,4 +1,4 @@
-/* global mood, __seen */
+/* global mood, __seen, openProject */
 import { test, expect } from "./fixtures.js";
 
 // Acceptance tests for the P1 motion items in docs/design/motion-spec.md (Designer, commit 587ed19):
@@ -195,5 +195,134 @@ test.describe("2. Send a heartbeat", () => {
     await beat(page).click(); // "Send again" starts over
     await expect(page.locator("#arch .node.on")).toHaveAttribute("data-k", "sensor");
     await expect(page.locator("#archInfo")).toHaveAttribute("aria-live", "polite");
+  });
+});
+
+test.describe("3. Cards that travel", () => {
+  const chip = (page, f) => page.locator(`.proj-head [data-filter="${f}"]`);
+  const shownNow = (page) => page.locator(".p-card:not([hidden])").count();
+  const expected = (page, f) => page.evaluate((x) => [...document.querySelectorAll(".p-card")].filter((c) => x === "all" || c.dataset.cats.includes(x)).length, f);
+
+  test("each filter shows exactly the cards whose categories contain it, and the status says how many", async ({ page }) => {
+    await page.goto("/");
+    expect(await shownNow(page)).toBe(9);
+    for (const f of ["ai", "web", "mobile", "design", "all"]) {
+      await chip(page, f).click();
+      const n = await expected(page, f);
+      expect(n).toBeGreaterThan(0);
+      expect(await shownNow(page)).toBe(n);
+      await expect(page.locator("#projStatus")).toHaveText(`${n} project${n === 1 ? "" : "s"} shown`);
+      await expect(chip(page, f)).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator('.proj-head .chip[aria-pressed="true"]')).toHaveCount(1);
+    }
+    expect(await shownNow(page)).toBe(9);
+  });
+
+  test("four chips pressed within 500 ms end on the last filter and leave nothing running after 1 s", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#projectList").scrollIntoViewIfNeeded();
+    await page.evaluate(() => ["ai", "web", "mobile", "design"].forEach((f) => document.querySelector(`.proj-head [data-filter="${f}"]`).click()));
+    await page.waitForTimeout(1000);
+    await expect(chip(page, "design")).toHaveAttribute("aria-pressed", "true");
+    expect(await shownNow(page)).toBe(await expected(page, "design"));
+    const leftovers = await page.evaluate(() => [...document.querySelectorAll(".p-card")].filter((c) => c.getAnimations().length || c.style.transform).length);
+    expect(leftovers).toBe(0);
+  });
+
+  test("staying cards glide (420 ms, never more than 120 px away) and entering cards fade in", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#projectList").scrollIntoViewIfNeeded();
+    const seen = await page.evaluate(() => {
+      const out = { glide: 0, enter: 0, far: 0, timings: new Set() };
+      for (const f of ["design", "all", "web", "all", "mobile", "ai"]) {
+        document.querySelector(`.proj-head [data-filter="${f}"]`).click();
+        for (const c of document.querySelectorAll(".p-card")) for (const a of c.getAnimations()) {
+          if (a instanceof CSSTransition || a instanceof CSSAnimation) continue; // the page's own reveal and hover transitions
+          const k = a.effect.getKeyframes(), t = a.effect.getTiming();
+          out.timings.add(`${t.duration}`);
+          if (k[0].opacity !== undefined && k[0].opacity !== "1") out.enter++;
+          else {
+            out.glide++;
+            const [x, y] = (k[0].transform.match(/-?[\d.]+/g) || []).map(Number);
+            if (Math.abs(x) > 120.01 || Math.abs(y) > 120.01) out.far++;
+          }
+        }
+      }
+      return { ...out, timings: [...out.timings] };
+    });
+    expect(seen.glide).toBeGreaterThan(0);
+    expect(seen.enter).toBeGreaterThan(0);
+    expect(seen.far).toBe(0);
+    expect(seen.timings.sort()).toEqual(["260", "420"]);
+  });
+
+  test("with reduced motion the filter is instant, nothing animates and the status is still announced", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const animations = await page.evaluate(() => {
+      document.querySelector('.proj-head [data-filter="web"]').click();
+      return [...document.querySelectorAll(".p-card")].reduce((n, c) => n + c.getAnimations().length, 0);
+    });
+    expect(animations).toBe(0);
+    expect(await shownNow(page)).toBe(await expected(page, "web"));
+    await expect(page.locator("#projStatus")).toContainText("shown");
+  });
+
+  test("sorting two reviews leaves all 9 projects visible", async ({ page }) => {
+    const review = (n) => ({ name: `Visitor ${n}`, comment: "Nice portfolio, thank you.", rating: n, date: `2026-0${n}-01` });
+    await page.route("**/reviews.json", (route) => route.fulfill({ json: [review(1), review(2)] }));
+    await page.goto("/");
+    for (const s of ["top", "new"]) await page.locator(`.rv-sort [data-sort="${s}"]`).click();
+    expect(await shownNow(page)).toBe(9);
+  });
+
+  test("Details grows out of the pressed card, and focus returns to that button after Escape", async ({ page }) => {
+    await page.goto("/");
+    const details = page.locator(".p-more").nth(2);
+    await details.scrollIntoViewIfNeeded();
+    await details.click();
+    const from = await page.evaluate(() => {
+      const m = document.querySelector("#projectModal");
+      return { open: m.open, origin: m.style.transformOrigin, grows: m.getAnimations().some((a) => a.effect.getKeyframes()[0].transform === "scale(0.94)") };
+    });
+    expect(from.open).toBe(true);
+    expect(from.origin).toMatch(/px/);
+    expect(from.grows).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#projectModal")).not.toHaveAttribute("open", "");
+    await expect(details).toBeFocused();
+  });
+
+  test("a project opened any other way keeps the normal entrance", async ({ page }) => {
+    await page.goto("/");
+    const grows = await page.evaluate(() => {
+      openProject("meds");
+      const m = document.querySelector("#projectModal");
+      return { open: m.open, origin: m.style.transformOrigin, animation: m.style.animation, grows: m.getAnimations().some((a) => a.effect.getKeyframes()[0].transform === "scale(0.94)") };
+    });
+    expect(grows).toEqual({ open: true, origin: "", animation: "", grows: false });
+  });
+
+  test("printing shows every project whatever filter is active", async ({ page }) => {
+    await page.goto("/");
+    await chip(page, "web").click();
+    await page.emulateMedia({ media: "print" });
+    const visible = await page.locator(".p-card").evaluateAll((els) => els.filter((e) => getComputedStyle(e).display !== "none").length);
+    expect(visible).toBe(9);
+  });
+
+  test("at 320 px the page never scrolls sideways while cards move", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/");
+    await page.locator("#projectList").scrollIntoViewIfNeeded();
+    const widest = await page.evaluate(() => {
+      let w = 0;
+      for (const f of ["design", "all", "web", "all"]) {
+        document.querySelector(`.proj-head [data-filter="${f}"]`).click();
+        w = Math.max(w, document.documentElement.scrollWidth);
+      }
+      return w;
+    });
+    expect(widest).toBeLessThanOrEqual(320);
   });
 });

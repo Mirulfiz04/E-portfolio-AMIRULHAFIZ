@@ -476,11 +476,32 @@ list.innerHTML = projects.map((p) => `
 observeReveals($$(".reveal"));
 
 // .proj-head only: other chip groups (the guestbook sort, the lesson themes) also sit in a .filters box and must not hide projects
+// Cards that travel (motion spec item 3): FLIP, not a view transition. Measure the visible cards, change `hidden`, measure again and
+// animate each staying card from where it was. Leaving cards go at once; entering cards fade and grow in.
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)", projCards = $$(".p-card"), projStatus = $("#projStatus");
+const shownCards = () => projCards.filter((c) => !c.hidden);
 $$(".proj-head .chip").forEach((chip) => chip.addEventListener("click", () => {
   $$(".proj-head .chip").forEach((c) => c.setAttribute("aria-pressed", c === chip));
   const f = chip.dataset.filter;
-  const apply = () => $$(".p-card").forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
-  vt(apply);
+  // a quick second press must start from the true layout: stop running card animations and drop the hover tilt before measuring
+  projCards.forEach((c) => { c.getAnimations().forEach((a) => a.cancel()); c.classList.remove("tilt"); });
+  const before = new Map(shownCards().map((c) => [c, c.getBoundingClientRect()]));
+  projCards.forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
+  const shown = shownCards();
+  projStatus.textContent = `${shown.length} project${shown.length === 1 ? "" : "s"} shown`;
+  if (reduceMotion) return;
+  const onScreen = (r) => r.bottom > 0 && r.top < innerHeight, clamp = (v) => Math.max(-120, Math.min(120, v)); // one column on phones: cards would travel far
+  let n = 0;
+  for (const card of shown) {
+    const to = card.getBoundingClientRect(), from = before.get(card);
+    if (!from) {
+      if (onScreen(to)) card.animate([{ opacity: 0, transform: "scale(0.96)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: EASE, fill: "backwards" });
+      continue;
+    }
+    const dx = from.left - to.left, dy = from.top - to.top;
+    if ((!onScreen(from) && !onScreen(to)) || (Math.abs(dx) < 1 && Math.abs(dy) < 1)) continue;
+    card.animate([{ transform: `translate(${clamp(dx)}px, ${clamp(dy)}px)` }, { transform: "none" }], { duration: 420, delay: Math.min(n++ * 25, 150), easing: EASE, fill: "backwards" });
+  }
 }));
 
 /* ---------- What my projects taught me ---------- */
@@ -514,7 +535,7 @@ moreBtn.addEventListener("click", () => { lessonsOpen = true; lessonList.classLi
 renderLessons("all");
 
 const modal = $("#projectModal");
-function openProject(id) {
+function openProject(id, fromCard = null) { // fromCard: the card whose Details button was pressed; any other way in keeps today's entrance
   const p = projects.find((x) => x.id === id);
   if (!p) return false;
   $("#mBody").innerHTML = `${cover(p)}
@@ -534,12 +555,20 @@ function openProject(id) {
     </div>`;
   $$("dialog[open]").forEach((d) => d.close());
   modal.showModal();
+  if (fromCard && !reduceMotion) {
+    // grow out of the pressed card: origin at the card's centre, scale 0.94 -> 1 and opacity, instead of the CSS "rise"
+    const c = fromCard.getBoundingClientRect(), d = modal.getBoundingClientRect();
+    modal.style.animation = "none"; // cleared on close; clearing it now would restart "rise"
+    modal.style.transformOrigin = `${c.left + c.width / 2 - d.left}px ${c.top + c.height / 2 - d.top}px`;
+    modal.animate([{ opacity: 0, transform: "scale(0.94)" }, { opacity: 1, transform: "none" }], { duration: 280, easing: EASE });
+    modal.addEventListener("close", () => { modal.style.animation = ""; modal.style.transformOrigin = ""; }, { once: true });
+  }
   unlock("project");
   return true;
 }
 document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-open-project]");
-  if (t) { e.preventDefault(); openProject(t.dataset.openProject); }
+  if (t) { e.preventDefault(); openProject(t.dataset.openProject, t.classList.contains("p-more") ? t.closest(".p-card") : null); }
 });
 modal.addEventListener("click", (e) => { if (e.target === modal || e.target.closest("[data-close-modal]")) modal.close(); }); // backdrop or in-page link closes it
 
@@ -1030,7 +1059,7 @@ $('#arch .node[data-k="sensor"]').classList.add("on");
 /* ---------- Send a heartbeat: a reading travels sensor → app → ml → app → supa → edge → claude (motion spec item 2) ---------- */
 (function heartbeat() {
   const arch = $("#arch"), btn = $("#sendBeat"), say = $("#beatStatus"), info = $("#archInfo");
-  const ORDER = ["sensor", "app", "ml", "app", "supa", "edge", "claude"], EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+  const ORDER = ["sensor", "app", "ml", "app", "supa", "edge", "claude"];
   const LABEL = { idle: "▶ Send a heartbeat", next: "Next part →", again: "↻ Send again" };
   const node = (k) => arch.querySelector(`.node[data-k="${k}"]`);
   const nameOf = (n) => [...n.childNodes].find((c) => c.nodeType === 3).textContent.trim();
