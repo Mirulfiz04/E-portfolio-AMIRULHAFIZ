@@ -2,7 +2,9 @@ import { test as base, expect } from "@playwright/test";
 
 // The normal suite blocks every CDN, so js/motion.js (Lenis smooth scroll + GSAP ScrollTrigger) never runs there.
 // These tests let ONLY the three animation libraries through (cdnjs + jsDelivr, the exact URLs and SRI hashes in
-// index.html), so they need internet. They skip themselves when the CDN cannot be reached.
+// index.html), so they need internet. They are OPT-IN: CI must not depend on a CDN (docs decision 006), so the
+// whole file is skipped unless you run   PW_REAL_CDN=1 npx playwright test --project=qa tests/qa-motion.spec.js
+// (also skipped if the CDN cannot be reached). Cases that need no network live in qa-fallback.spec.js.
 // Fonts, the GitHub API and the visit counter stay blocked.
 
 const CDN_HOSTS = ["cdnjs.cloudflare.com", "cdn.jsdelivr.net"];
@@ -30,6 +32,8 @@ const test = base.extend({
     await use(errors);
   }
 });
+
+test.skip(!process.env.PW_REAL_CDN, "real-CDN tests are opt-in: set PW_REAL_CDN=1 (needs internet; CI stays CDN-free)");
 
 test.beforeAll(async ({ playwright }) => {
   const ctx = await playwright.request.newContext();
@@ -149,8 +153,8 @@ test.describe("Animated path with reduced motion", () => {
 });
 
 // CDN partly down: each combination must leave a page that still scrolls and shows its content.
+// (All three blocked needs no network, so it lives in qa-fallback.spec.js.)
 const PARTIAL = [
-  { name: "all three blocked", block: ["gsap", "scrolltrigger", "lenis"] },
   { name: "GSAP blocked, Lenis loads", block: ["gsap"], bug: "B-02: Lenis only ticks from gsap.ticker, so without GSAP it swallows the wheel and the page cannot be scrolled with a mouse" },
   { name: "ScrollTrigger blocked, GSAP and Lenis load", block: ["scrolltrigger"], bug: "B-02b: same as B-02 (the ticker is only wired after the ScrollTrigger check)" },
   { name: "Lenis blocked, GSAP loads", block: ["lenis"] }
@@ -180,16 +184,3 @@ for (const c of PARTIAL) {
     });
   });
 }
-
-// BUG B-04: the guestbook only opens a mail draft when no Formspree ID is set, yet it shows "Thank you!"
-test.describe("Guestbook form", () => {
-  test("does not claim the review was sent when it only opened an email draft", async ({ page }) => {
-    test.fail(true, "B-04: success message shown although only a mailto: draft opened (js/script.js, FORMSPREE_ID is empty)");
-    await page.goto("/");
-    await page.locator("#rvForm label[for=r5]").click();
-    await page.locator("#rvForm [name=name]").fill("QA Tester");
-    await page.locator("#rvForm [name=comment]").fill("Automated check, please ignore.");
-    await page.locator("#rvForm [type=submit]").click();
-    await expect(page.locator("#rvMsg")).not.toHaveText(/thank you/i);
-  });
-});
