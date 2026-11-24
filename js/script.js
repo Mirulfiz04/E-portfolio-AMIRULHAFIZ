@@ -431,8 +431,9 @@ list.innerHTML = projects.map((p) => `
   </article>`).join("");
 observeReveals($$(".reveal"));
 
-$$(".filters .chip").forEach((chip) => chip.addEventListener("click", () => {
-  $$(".filters .chip").forEach((c) => c.setAttribute("aria-pressed", c === chip));
+// .proj-head only: other chip groups (the guestbook sort, the lesson themes) also sit in a .filters box and must not hide projects
+$$(".proj-head .chip").forEach((chip) => chip.addEventListener("click", () => {
+  $$(".proj-head .chip").forEach((c) => c.setAttribute("aria-pressed", c === chip));
   const f = chip.dataset.filter;
   const apply = () => $$(".p-card").forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
   vt(apply);

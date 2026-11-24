@@ -102,6 +102,42 @@ test.describe("Cached GitHub repos", () => {
   });
 });
 
+test.describe("Guestbook sort", () => {
+  const review = (n) => ({ name: `Visitor ${n}`, comment: "Nice portfolio, thank you.", rating: n, date: `2026-0${n}-01` });
+  const visibleProjects = (page) => page.locator(".p-card:not([hidden])").count();
+
+  test("is not shown while there are fewer than 2 reviews (the real reviews.json is empty)", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("#rvList .empty")).toBeAttached();
+    await expect(page.locator(".rv-sort")).toBeHidden();
+  });
+
+  test("sorting reviews leaves every project visible and the project filter alone", async ({ page }) => {
+    await page.route("**/reviews.json", (route) => route.fulfill({ json: [review(1), review(2)] }));
+    await page.goto("/");
+    const total = await page.locator(".p-card").count();
+    expect(total).toBeGreaterThan(1);
+    await expect(page.locator(".rv-sort")).toBeVisible();
+
+    await page.locator('.rv-sort [data-sort="top"]').click();
+    await expect(page.locator('.rv-sort [data-sort="top"]')).toHaveAttribute("aria-pressed", "true");
+    expect(await visibleProjects(page)).toBe(total);
+    await expect(page.locator('.proj-head [data-filter="all"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator('.proj-head .chip[aria-pressed="true"]')).toHaveCount(1);
+  });
+
+  test("the project chips still filter the projects", async ({ page }) => {
+    await page.goto("/");
+    const total = await page.locator(".p-card").count();
+    await page.locator('.proj-head [data-filter="web"]').click();
+    await expect(page.locator('.proj-head [data-filter="web"]')).toHaveAttribute("aria-pressed", "true");
+    await expect.poll(() => visibleProjects(page)).toBeLessThan(total); // the filter may animate through a view transition
+    expect(await visibleProjects(page)).toBeGreaterThan(0);
+    await page.locator('.proj-head [data-filter="all"]').click();
+    await expect.poll(() => visibleProjects(page)).toBe(total);
+  });
+});
+
 test.describe("Published files", () => {
   test("docs and backend are kept out of the published site", () => {
     expect(excludedPaths(process.cwd())).toEqual(expect.arrayContaining(["docs", "backend"]));

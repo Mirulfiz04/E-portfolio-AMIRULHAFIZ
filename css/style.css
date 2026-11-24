@@ -202,6 +202,7 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 /* ===== Projects ===== */
 .proj-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filters[hidden] { display: none; } /* display:flex above would otherwise beat the hidden attribute, e.g. the guestbook sort with fewer than 2 reviews */
 .chip { min-height: 40px; padding: 6px 16px; font: 500 0.9rem var(--font); color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; transition: all 0.2s; }
 .chip:hover { color: var(--text); }
 .chip[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
