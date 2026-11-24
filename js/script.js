@@ -1064,8 +1064,9 @@ $('#arch .node[data-k="sensor"]').classList.add("on");
   const LABEL = { idle: "▶ Send a heartbeat", next: "Next part →", again: "↻ Send again" };
   const node = (k) => arch.querySelector(`.node[data-k="${k}"]`);
   const nameOf = (n) => [...n.childNodes].find((c) => c.nodeType === 3).textContent.trim();
-  // centre of a node inside #arch, minus half the 12 px dot; measured at the start of every hop because the grid is 2 columns on phones
-  const centre = (n) => { const a = arch.getBoundingClientRect(), r = n.getBoundingClientRect(); return [r.left - a.left + r.width / 2 - 6, r.top - a.top + r.height / 2 - 6]; };
+  // where the dot rests: the top-centre edge of a node inside #arch, centred on the border (minus half the 12 px dot), so it never covers
+  // the icon or label; measured at the start of every hop because the grid is 2 columns on phones
+  const centre = (n) => { const a = arch.getBoundingClientRect(), r = n.getBoundingClientRect(); return [r.left - a.left + r.width / 2 - 6, r.top - a.top - 6]; };
   let run = null, step = 0; // run = the heartbeat in progress: a stale one finds itself replaced and does nothing. step = reduced-motion stepping
 
   function arrive(k, announce) {

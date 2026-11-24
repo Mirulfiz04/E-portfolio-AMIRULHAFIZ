@@ -172,6 +172,8 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .mood-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 @keyframes pop { 40% { transform: scale(1.25) rotate(-8deg); } }
 .meds-label { text-align: center; }
+/* on the narrowest phones "Detected emotion: Surprised 92%" can wrap while "Calm" does not, which made the card jump in height when the mood changed: keep two lines */
+@media (max-width: 360px) { .meds-label { min-height: 3.6em; } } /* a little over two lines: the mono confidence value makes a wrapped label about 1px taller than exactly 2 line-heights */
 .meds-vitals { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
 .meds-vitals > div { padding: 12px; border-radius: 12px; background: var(--surface-2); }
 .meds-vitals span.muted { display: block; font-size: 0.8rem; }
@@ -590,6 +592,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .f-peek img { top: 12px; width: 120px; height: 90px; }
   .f-front { inset: 64px 0 0; }
   .fold-body { grid-template-columns: 1fr 1fr; }
+  .beat-row { text-align: right; } /* the fixed trophy sits bottom-left and used to cover a left-aligned button */
   .folders > .fold-body { margin-top: 0; } /* on one column the files sit between two folders, 14px from each like the folders themselves */
   .moments.desk { height: 480px; }
   .moments.desk .moment { width: 150px; }

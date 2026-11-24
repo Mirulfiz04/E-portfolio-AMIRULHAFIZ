@@ -352,3 +352,79 @@ test.describe("An older cached index.html with the new script", () => {
     expect(pageErrors).toEqual([]);
   });
 });
+
+test.describe("Designer review of items 1 and 2 (spec fad4d98)", () => {
+  for (const w of [320, 430, 760, 1280]) {
+    test(`the hero fade targets only the hero text, never the MEDS card (${w}px)`, async ({ page }) => {
+      // The fixtures block GSAP, so this uses a stand-in that records what js/motion.js asks it to fade. It proves the target, not the
+      // opacity itself: with the real GSAP the Designer measured the card at 0.80 (430px) and 0.64 (320px) before this change.
+      await page.addInitScript(() => {
+        const noop = () => {};
+        window.gsap = { registerPlugin: noop, from: noop, fromTo: noop, ticker: { add: noop, lagSmoothing: noop }, to: (target) => { window.__fade = target; } };
+        window.ScrollTrigger = { update: noop };
+      });
+      await page.setViewportSize({ width: w, height: 900 });
+      await page.goto("/");
+      expect(await page.evaluate(() => ({ asked: !!window.__fade, copy: window.__fade?.classList.contains("hero-copy"), holdsCard: window.__fade?.contains(document.querySelector(".meds")) })))
+        .toEqual({ asked: true, copy: true, holdsCard: false });
+    });
+  }
+
+  test("at 320px the card keeps one height for all five moods", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.goto("/");
+    // the blocked web font is narrower than the real one; a slightly larger label makes "Surprised" wrap while "Calm" does not
+    await page.addStyleTag({ content: ".meds-label { font-size: 1.05rem; }" });
+    const heights = [];
+    for (const m of ["Calm", "Neutral", "Happy", "Surprised", "Excited"]) {
+      await page.locator(`.mood-btn[data-mood="${m}"]`).click();
+      heights.push(await page.locator(".meds").evaluate((c) => Math.round(c.offsetHeight * 10) / 10));
+    }
+    expect(new Set(heights).size, heights.join(" / ")).toBe(1);
+  });
+
+  test("the heartbeat dot rests on the top edge of each part, never on its icon", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#sendBeat").scrollIntoViewIfNeeded();
+    // measured inside the page, from the arrival itself: the run's own 1.4 s pause must not expire between two round trips to the test
+    const stops = await page.evaluate(async () => {
+      const btn = document.querySelector("#sendBeat"), arch = document.querySelector("#arch"), sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const arrival = () => new Promise((r) => { const mo = new MutationObserver(() => { mo.disconnect(); r(); }); mo.observe(arch, { attributes: true, subtree: true, attributeFilter: ["class"] }); });
+      const out = [];
+      btn.click(); // the first stop (the sensor) is reached before click() returns
+      for (let stop = 0; stop < 3; stop++) {
+        await sleep(400); // the part has lifted and finished its pulse
+        const d = document.querySelector(".beat-dot").getBoundingClientRect(), n = document.querySelector("#arch .node.on"), r = n.getBoundingClientRect(), i = n.querySelector("span").getBoundingClientRect();
+        out.push({ dx: d.left + d.width / 2 - (r.left + r.width / 2), dy: d.top + d.height / 2 - r.top, onIcon: d.bottom > i.top && d.top < i.bottom && d.right > i.left && d.left < i.right });
+        const next = arrival();
+        btn.click(); // next part
+        await next;
+      }
+      return out;
+    });
+    for (const [stop, g] of stops.entries()) {
+      expect(Math.abs(g.dx), `stop ${stop} horizontal`).toBeLessThan(3);
+      expect(Math.abs(g.dy), `stop ${stop} vertical`).toBeLessThan(5);
+      expect(g.onIcon, `stop ${stop} covers the icon`).toBe(false);
+    }
+  });
+
+  for (const w of [320, 430, 760]) {
+    test(`the heartbeat button never meets the trophy at any scroll position (${w}px)`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: 800 });
+      await page.goto("/");
+      await expect(page.locator(".beat-row")).toHaveCSS("text-align", "right");
+      const hits = await page.evaluate(() => {
+        const b = document.querySelector("#sendBeat"), t = document.querySelector(".trophy"), top = b.getBoundingClientRect().top + scrollY, hits = [];
+        if (!t.getBoundingClientRect().width) return ["trophy has no box"];
+        for (let y = top - innerHeight; y <= top + 40; y += 20) {
+          scrollTo({ top: Math.max(0, y), behavior: "instant" });
+          const a = b.getBoundingClientRect(), c = t.getBoundingClientRect();
+          if (a.right > c.left && a.left < c.right && a.bottom > c.top && a.top < c.bottom) hits.push(Math.round(y));
+        }
+        return hits;
+      });
+      expect(hits).toEqual([]);
+    });
+  }
+});
