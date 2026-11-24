@@ -240,22 +240,22 @@
 
       <div class="cs card reveal">
         <div class="tabs" role="tablist" aria-label="MEDS case study">
-          <button role="tab" id="t-arch" aria-controls="p-arch" aria-selected="true">Architecture</button>
-          <button role="tab" id="t-ci" aria-controls="p-ci" aria-selected="false" tabindex="-1">CI/CD</button>
-          <button role="tab" id="t-sec" aria-controls="p-sec" aria-selected="false" tabindex="-1">Security</button>
-          <button role="tab" id="t-ml" aria-controls="p-ml" aria-selected="false" tabindex="-1">ML</button>
-          <button role="tab" id="t-learn" aria-controls="p-learn" aria-selected="false" tabindex="-1">What I learned</button>
+          <button type="button" role="tab" id="t-arch" aria-controls="p-arch" aria-selected="true">Architecture</button>
+          <button type="button" role="tab" id="t-ci" aria-controls="p-ci" aria-selected="false" tabindex="-1">CI/CD</button>
+          <button type="button" role="tab" id="t-sec" aria-controls="p-sec" aria-selected="false" tabindex="-1">Security</button>
+          <button type="button" role="tab" id="t-ml" aria-controls="p-ml" aria-selected="false" tabindex="-1">ML</button>
+          <button type="button" role="tab" id="t-learn" aria-controls="p-learn" aria-selected="false" tabindex="-1">What I learned</button>
         </div>
 
         <div class="panel" role="tabpanel" id="p-arch" aria-labelledby="t-arch">
           <p class="muted small">Hover or tap a part to see what it does.</p>
           <div class="arch" id="arch">
-            <button class="node" data-k="sensor"><span>⌚</span>ESP32 + MAX30102</button>
-            <button class="node" data-k="app"><span>📱</span>Flutter app</button>
-            <button class="node" data-k="ml"><span>🧠</span>On-device TFLite</button>
-            <button class="node" data-k="supa"><span>🗄️</span>Supabase<br /><small>Auth · Postgres · RLS</small></button>
-            <button class="node" data-k="edge"><span>⚡</span>Edge Functions</button>
-            <button class="node" data-k="claude"><span>✨</span>Claude API</button>
+            <button type="button" class="node" data-k="sensor"><span>⌚</span>ESP32 + MAX30102</button>
+            <button type="button" class="node" data-k="app"><span>📱</span>Flutter app</button>
+            <button type="button" class="node" data-k="ml"><span>🧠</span>On-device TFLite</button>
+            <button type="button" class="node" data-k="supa"><span>🗄️</span>Supabase<br /><small>Auth · Postgres · RLS</small></button>
+            <button type="button" class="node" data-k="edge"><span>⚡</span>Edge Functions</button>
+            <button type="button" class="node" data-k="claude"><span>✨</span>Claude API</button>
           </div>
           <p class="arch-info" id="archInfo" aria-live="polite">The ESP32 reads heart rate and SpO₂ and serves them over its own Wi-Fi hotspot. The app polls it, and a native Android channel pins that request to Wi-Fi so it still works while mobile data carries the internet.</p>
         </div>
@@ -380,8 +380,8 @@
             <input type="radio" name="rating" id="r1" value="1" /><label for="r1" title="1 star">★<span class="sr">1 star</span></label>
             </span>
           </fieldset>
-          <label>Name <input name="name" required maxlength="40" autocomplete="name" /></label>
-          <label><span>Role <span class="muted">(optional)</span></span><input name="role" maxlength="60" placeholder="e.g. Recruiter at …" /></label>
+          <label>Name <input type="text" name="name" required maxlength="40" autocomplete="name" /></label>
+          <label><span>Role <span class="muted">(optional)</span></span><input type="text" name="role" maxlength="60" placeholder="e.g. Recruiter at …" /></label>
           <label>Comment <textarea name="comment" required minlength="5" maxlength="500" rows="4"></textarea></label>
           <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <button class="btn primary" type="submit">Send review</button>
@@ -417,7 +417,7 @@
 
   <!-- PROJECT DETAIL -->
   <dialog class="modal" id="projectModal" aria-labelledby="mTitle">
-    <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
+    <form method="dialog"><button type="submit" class="icon-btn close" aria-label="Close">✕</button></form>
     <div id="mBody"></div>
   </dialog>
 
@@ -425,9 +425,10 @@
   <dialog class="palette" id="palette" aria-label="Search and jump">
     <div class="pal-in">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input id="palInput" placeholder="Search sections, projects, actions…" role="combobox" aria-expanded="true" aria-controls="palList" aria-autocomplete="list" autocomplete="off" spellcheck="false" />
+      <input type="text" id="palInput" placeholder="Search sections, projects, actions…" role="combobox" aria-expanded="true" aria-controls="palList" aria-autocomplete="list" autocomplete="off" spellcheck="false" />
       <kbd>esc</kbd>
     </div>
+    <!-- [html-validate-disable-next prefer-native-element -- custom ARIA listbox for the command palette, filtered live by js] -->
     <ul id="palList" role="listbox" aria-label="Results"></ul>
     <p class="pal-foot muted"><kbd>↑</kbd><kbd>↓</kbd> to move · <kbd>↵</kbd> to open</p>
   </dialog>
@@ -435,7 +436,7 @@
   <!-- ACHIEVEMENTS -->
   <button class="trophy" id="trophy" type="button" aria-label="Achievements"><span aria-hidden="true">🏆</span> <b id="trophyCount">0/14</b></button>
   <dialog class="badges-dlg" id="badges" aria-labelledby="bTitle">
-    <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
+    <form method="dialog"><button type="submit" class="icon-btn close" aria-label="Close">✕</button></form>
     <h2 id="bTitle">Achievements</h2>
     <p class="muted small">Unlock them by exploring the site. They’re saved in your browser only.</p>
     <ul class="badge-list" id="badgeList"></ul>
@@ -444,14 +445,15 @@
 
   <!-- QUIZ -->
   <dialog class="badges-dlg quiz" id="quiz" aria-labelledby="qTitle">
-    <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
+    <form method="dialog"><button type="submit" class="icon-btn close" aria-label="Close">✕</button></form>
     <h2 id="qTitle">Quick quiz</h2>
     <div id="qBody" aria-live="polite"></div>
   </dialog>
 
   <!-- PHOTO LIGHTBOX -->
   <dialog class="lightbox" id="lightbox" aria-label="Photo">
-    <form method="dialog"><button class="icon-btn close" aria-label="Close">✕</button></form>
+    <form method="dialog"><button type="submit" class="icon-btn close" aria-label="Close">✕</button></form>
+    <!-- [html-validate-disable-next element-required-attributes -- src is set by js when a photo is opened] -->
     <img id="lbImg" alt="" />
     <button class="icon-btn lb-nav prev" id="lbPrev" type="button" aria-label="Previous photo">←</button>
     <button class="icon-btn lb-nav next" id="lbNext" type="button" aria-label="Next photo">→</button>
@@ -463,12 +465,13 @@
     <div class="term-bar">
       <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
       <span class="mono">guest@amirul: ~</span>
-      <form method="dialog"><button class="icon-btn close" aria-label="Close terminal">✕</button></form>
+      <form method="dialog"><button type="submit" class="icon-btn close" aria-label="Close terminal">✕</button></form>
     </div>
     <div class="term-out mono" id="termOut" role="log" aria-live="polite"></div>
+    <!-- [html-validate-disable-next wcag/h32 -- single-field command line, submitted with Enter] -->
     <form class="term-in mono" id="termForm" autocomplete="off">
       <label for="termInput" class="prompt">$</label>
-      <input id="termInput" spellcheck="false" autocapitalize="off" aria-label="Command" />
+      <input type="text" id="termInput" spellcheck="false" autocapitalize="off" aria-label="Command" />
     </form>
   </dialog>
 
