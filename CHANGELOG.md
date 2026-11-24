@@ -7,15 +7,7 @@ Times are **Malaysia time (UTC+8)**. Since 24 Nov 2026 every change has an issue
 
 ## Unreleased
 
-Pull request [#9](../../pull/9)
-
-- **Fixed:** the **Download CV** buttons never opened the print dialog, because the terminal's `print()` helper overwrote `window.print` ([#7](../../issues/7))
-- **Added:** CI on every pull request and push to `main`: ESLint, HTML validation, a missing-file check and browser tests at phone and desktop size ([#6](../../issues/6))
-- **Added:** a CI/CD pipeline: pushing to `main` now runs CI, then build, then deploy, then verifies the live site. A failing check stops the deploy, and nothing deploys from any other branch ([#8](../../issues/8))
-- **Added:** `scripts/verify-live.mjs`, the post-deploy check that proves the live site is this commit and that developer files are not public ([#8](../../issues/8))
-- **Added:** issue forms, a pull request template, Dependabot, `CODEOWNERS` and `CONTRIBUTING.md` describing the whole workflow ([#6](../../issues/6))
-- **Added:** this changelog and timeline
-- **Changed:** buttons and inputs now have explicit types so `index.html` is valid HTML
+Nothing yet. Add one line here in your next pull request.
 
 ## 24 Nov 2026: fixes, logos, a playful skills section and a proper workflow
 
@@ -36,6 +28,19 @@ Pull request [#9](../../pull/9)
 | 21:03 | First CI run on GitHub passed: lint, HTML and assets, browser tests, and the **CI passed** summary | [PR #9](../../pull/9) |
 | 21:08 | CI/CD pipeline added: deploy now waits for CI, deploys only from `main`, then verifies the live site | [#8](../../issues/8), [PR #9](../../pull/9), `d5a7c2b` |
 | 21:10 | Pipeline dry run by hand on the branch: CI and Build site passed, Deploy and Verify were skipped as designed, nothing was published | [run #19](https://github.com/Mirulfiz04/E-portfolio-AMIRULHAFIZ/actions/runs/45400506631) |
+| 23:22 | [PR #9](../../pull/9) merged into `main` (merge commit `e322405`); #6, #7 and #8 closed with it. The pipeline's first run on `main` passed, including Verify the live site (run 45424820627, as recorded in #15) | [PR #9](../../pull/9), [#6](../../issues/6) [#7](../../issues/7) [#8](../../issues/8) |
+| 23:23 | Dependabot opened five pull requests that bump GitHub Actions versions (#10 to #14); CI is green on each, none merged yet | [#10](../../pull/10) [#11](../../pull/11) [#12](../../pull/12) [#13](../../pull/13) [#14](../../pull/14) |
+| 23:29 | Issue opened to make the live-site check exact by stamping asset links with the commit ID | [#15](../../issues/15) |
+
+What [PR #9](../../pull/9) delivered:
+
+- **Fixed:** the **Download CV** buttons never opened the print dialog, because the terminal's `print()` helper overwrote `window.print` ([#7](../../issues/7))
+- **Added:** CI on every pull request and push to `main`: ESLint, HTML validation, a missing-file check and browser tests at phone and desktop size ([#6](../../issues/6))
+- **Added:** a CI/CD pipeline: pushing to `main` now runs CI, then build, then deploy, then verifies the live site. A failing check stops the deploy, and nothing deploys from any other branch ([#8](../../issues/8))
+- **Added:** `scripts/verify-live.mjs`, the post-deploy check that proves the live site is this commit and that developer files are not public ([#8](../../issues/8))
+- **Added:** issue forms, a pull request template, Dependabot, `CODEOWNERS` and `CONTRIBUTING.md` describing the whole workflow ([#6](../../issues/6))
+- **Added:** this changelog and timeline
+- **Changed:** buttons and inputs now have explicit types so `index.html` is valid HTML
 
 ## 23 Nov 2026: guestbook, photos as proof, and motion
 
@@ -72,7 +77,13 @@ Pull request [#9](../../pull/9)
 | [#3](../../issues/3) | Enhancement | Skills: show a logo on every skill pill | 24 Nov 20:50 | closed 24 Nov 20:51 |
 | [#4](../../issues/4) | Enhancement | Skills: make the section playful | 24 Nov 20:50 | closed 24 Nov 20:51 |
 | [#5](../../issues/5) | To do | Check Proof folders and Skills on a real phone after deploy | 24 Nov 20:50 | open |
-| [#6](../../issues/6) | Enhancement | Add CI, automated tests and a proper contribution workflow | 24 Nov 20:53 | open, closes with PR #9 |
-| [#7](../../issues/7) | Bug | Download CV button does nothing: `print()` overwrites `window.print` | 24 Nov 20:53 | open, closes with PR #9 |
-| [#8](../../issues/8) | Enhancement | Gate the GitHub Pages deploy on CI | 24 Nov 21:01 | open, closes with PR #9 |
-| [PR #9](../../pull/9) | Pull request | Add CI, automated tests and a contribution workflow; fix broken Download CV | 24 Nov 21:02 | draft |
+| [#6](../../issues/6) | Enhancement | Add CI, automated tests and a proper contribution workflow | 24 Nov 20:53 | closed 24 Nov 23:22 with PR #9 |
+| [#7](../../issues/7) | Bug | Download CV button does nothing: `print()` overwrites `window.print` | 24 Nov 20:53 | closed 24 Nov 23:22 with PR #9 |
+| [#8](../../issues/8) | Enhancement | Gate the GitHub Pages deploy on CI | 24 Nov 21:01 | closed 24 Nov 23:22 with PR #9 |
+| [PR #9](../../pull/9) | Pull request | Add CI, automated tests and a contribution workflow; fix broken Download CV | 24 Nov 21:02 | merged 24 Nov 23:22 (`e322405`) |
+| [#15](../../issues/15) | Enhancement | Make the live-site check exact: stamp asset links with the commit ID at build time | 24 Nov 23:29 | open |
+| [PR #10](../../pull/10) | Dependabot | ci: bump actions/upload-artifact from 4 to 7 | 24 Nov 23:23 | open |
+| [PR #11](../../pull/11) | Dependabot | ci: bump actions/upload-pages-artifact from 3 to 5 | 24 Nov 23:23 | open |
+| [PR #12](../../pull/12) | Dependabot | ci: bump actions/deploy-pages from 4 to 5 | 24 Nov 23:23 | open |
+| [PR #13](../../pull/13) | Dependabot | ci: bump actions/configure-pages from 5 to 6 | 24 Nov 23:23 | open |
+| [PR #14](../../pull/14) | Dependabot | ci: bump actions/checkout from 4 to 7 | 24 Nov 23:23 | open |
