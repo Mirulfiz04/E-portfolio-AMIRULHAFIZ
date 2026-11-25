@@ -83,7 +83,8 @@ test.describe("Animated path (all three libraries load)", () => {
   test("the hero drifts up as you scroll and comes back when you return", async ({ page }) => {
     await page.goto("/");
     await expect.poll(() => libsLoaded(page)).toEqual({ gsap: true, st: true, lenis: true });
-    const heroOpacity = () => page.evaluate(() => Number(getComputedStyle(document.querySelector(".hero-copy, .hero > div")).opacity));
+    // .hero-copy only: the old selector ".hero-copy, .hero > div" matched the outer grid and dimmed the MEDS card too (fixed in 31602a9)
+    const heroOpacity = () => page.evaluate(() => Number(getComputedStyle(document.querySelector(".hero-copy")).opacity));
     await page.mouse.move(600, 400);
     await page.mouse.wheel(0, 500);
     await expect.poll(heroOpacity, { timeout: 5000 }).toBeLessThan(0.9);
@@ -201,4 +202,29 @@ test.describe("Menu on a landscape phone with the real libraries", () => {
     expect(await scrollY(page)).toBe(0);
     await expect(page.locator("#nav a[href='#contact']")).toBeInViewport();
   });
+});
+
+// D1 with the real libraries: the hero fade must never dim the MEDS card (or its mood buttons) at any width
+test.describe("MEDS card stays fully visible with GSAP loaded (motion spec item 1)", () => {
+  for (const w of [320, 430, 760, 1280]) {
+    test(`card and all its ancestors have opacity 1 while the mood buttons are on screen at ${w}px`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: w < 761 ? 900 : 800 });
+      await page.goto("/");
+      await expect.poll(() => libsLoaded(page)).toEqual({ gsap: true, st: true, lenis: true });
+      const worst = () => page.evaluate(() => {
+        const btns = document.querySelector(".mood");
+        const r = btns.getBoundingClientRect();
+        if (r.bottom <= 0 || r.top >= innerHeight) return { onScreen: false, minOpacity: 1 };
+        let min = 1;
+        for (let e = document.querySelector(".meds"); e; e = e.parentElement) min = Math.min(min, Number(getComputedStyle(e).opacity));
+        return { onScreen: true, minOpacity: min };
+      });
+      for (const dy of [0, 60, 120, 200]) {
+        await page.evaluate((y) => window.scrollTo(0, y), dy);
+        await page.waitForTimeout(500); // Lenis and ScrollTrigger scrub need a moment
+        const s = await worst();
+        if (s.onScreen) expect(s.minOpacity, `scrollY=${dy}`).toBe(1);
+      }
+    });
+  }
 });
