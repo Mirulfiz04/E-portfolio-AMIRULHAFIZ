@@ -110,7 +110,7 @@ CI  →  Build site  →  Deploy to GitHub Pages  →  Verify the live site
 
 ### Cache-busting links (`?v=`): depends on branch `feat/stamp-commit-sha`
 
-**This section is only true once commit `31ae02c` (branch `feat/stamp-commit-sha`, issue #15) is merged to `main`. These docs must merge with or after it. Until then, keep bumping `?v=` by hand when you change CSS or JS.**
+**This section is only true once commit `00f1755` (branch `feat/stamp-commit-sha`, issue #15) is merged to `main`. These docs must merge with or after it. Until then, keep bumping `?v=` by hand when you change CSS or JS.**
 
 After it lands, nobody bumps `?v=N` by hand. The **Build site** job runs `scripts/stamp-version.mjs` on its temporary checkout before Jekyll, which rewrites every `?v=N` on the CSS and JS links of `index.html` to `?v=<short commit ID>` in the published copy only; the files in the repository keep their old numbers. It fails the build if it stamps nothing. The **Verify** stage then runs with `VERIFY_COMMIT` set to the deployed commit and requires the live links to end with that exact ID. A run without `VERIFY_COMMIT` (for example `npm run verify:live` on your machine) compares the links as they are in your checkout. Do not set `GITHUB_SHA` for this: CI sets it too and it would break the local pipeline tests.
 
