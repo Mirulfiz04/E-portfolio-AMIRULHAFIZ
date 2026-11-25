@@ -624,6 +624,22 @@ function nextHello() {
 helloEl.addEventListener("click", () => { const [, lang] = hellos[(hi + 1) % hellos.length]; nextHello(); toast(`👋 ${lang}`); });
 if (!reduceMotion) setInterval(() => { if (document.activeElement !== helloEl) nextHello(); }, 4000);
 
+// Reserve the headline's tallest greeting + role at this width and font, so typing never moves the page below it
+function reserveHeadline() {
+  const h1 = helloEl.closest("h1"), was = [helloEl.textContent, typeEl.textContent];
+  let tallest = 0;
+  h1.style.setProperty("--tallest", 0);
+  for (const [word] of hellos) for (const role of roles) {
+    helloEl.textContent = word; typeEl.textContent = role;
+    tallest = Math.max(tallest, h1.getBoundingClientRect().height);
+  }
+  [helloEl.textContent, typeEl.textContent] = was;
+  h1.style.setProperty("--tallest", `${Math.ceil(tallest)}px`);
+}
+reserveHeadline();
+addEventListener("resize", reserveHeadline);
+document.fonts?.ready.then(reserveHeadline);
+
 /* ---------- Mobile menu ---------- */
 const menuBtn = $("#menuBtn"), nav = $("#nav");
 function setMenu(open) { nav.classList.toggle("open", open); menuBtn.setAttribute("aria-expanded", open); }
