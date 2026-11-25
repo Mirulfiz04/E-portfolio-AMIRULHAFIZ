@@ -153,6 +153,7 @@ test.describe("B-09 folder icons", () => {
     test(`the icon sits inside the front panel at ${w}px`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: 900 });
       await page.goto("/");
+      await page.addStyleTag({ content: ".f-front { letter-spacing: 0.12em }" }); // stands in for a wider fallback font
       const over = await page.evaluate(() => [...document.querySelectorAll(".folder")].map((f) => f.querySelector(".f-front").getBoundingClientRect().top - f.querySelector(".f-ico").getBoundingClientRect().top).filter((d) => d > 0.5));
       expect(over).toEqual([]);
     });
