@@ -5,7 +5,9 @@
 // It keeps retrying for a couple of minutes because GitHub Pages can take a moment to switch over.
 // Checks, in order:
 //   1. the home page loads, has the right <title>, and links the same versioned files (css/style.css?v=N ...)
-//      as the index.html in this checkout, which proves it is this commit and not an older copy
+//      as the index.html in this checkout, which proves it is this commit and not an older copy.
+//      With VERIFY_COMMIT=<sha> (the pipeline sets it) the links must end with that commit's short ID instead,
+//      because the Build site job stamped them (scripts/stamp-version.mjs)
 //   2. every local file the home page links to (CSS, JS, images, ...) loads
 //   3. robots.txt and sitemap.xml load, and unknown URLs get the custom 404 page
 //   4. developer files (package.json, tests, scripts ...) are NOT published
@@ -14,6 +16,7 @@ import { readFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { excludedPaths } from "./site-config.mjs";
+import { stampHtml } from "./stamp-version.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const arg = process.argv[2] || process.env.SITE_URL;
@@ -26,7 +29,20 @@ const attempts = Number(process.env.VERIFY_ATTEMPTS || 12);
 const delayMs = Number(process.env.VERIFY_DELAY_MS || 10000);
 const bust = process.env.GITHUB_RUN_ID || String(Date.now()); // cache-buster so a stale CDN copy is never what we check
 
-const indexHtml = readFileSync(join(root, "index.html"), "utf8");
+// The pipeline passes the commit it deployed as VERIFY_COMMIT (not GITHUB_SHA: CI sets that too, even for the local tests).
+// The Build site job stamped its short ID into the ?v= links (scripts/stamp-version.mjs), so the live page must carry it.
+// Without VERIFY_COMMIT (a local run) the links in this checkout are compared as they are.
+const commit = process.env.VERIFY_COMMIT;
+let indexHtml = readFileSync(join(root, "index.html"), "utf8");
+if (commit) {
+  try {
+    if (!/\?v=/.test(indexHtml)) throw new Error("index.html has no ?v= links, so there is nothing to prove the commit with");
+    indexHtml = stampHtml(indexHtml, commit);
+  } catch (error) {
+    console.error(`verify-live: cannot expect commit "${commit}": ${error.message}`);
+    process.exit(2);
+  }
+}
 const titleOf = (html) => html.match(/<title>([^<]*)<\/title>/i)?.[1];
 const homeTitle = titleOf(indexHtml);
 const notFoundTitle = titleOf(readFileSync(join(root, "404.html"), "utf8"));
