@@ -176,8 +176,6 @@ test.describe("Redirect stubs (B-03)", () => {
 });
 
 test.describe("Typing headline (B-13)", () => {
-  test.use({ contextOptions: { reducedMotion: "reduce" } }); // the test sets the text itself
-
   test("keeps one height for every greeting and role, so the page below never jumps", async ({ page }) => {
     await page.goto("/");
     await page.addStyleTag({ content: ".hero h1 { letter-spacing: 0.04em }" }); // stands in for a wider fallback font
