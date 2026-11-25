@@ -180,7 +180,8 @@ test.describe("Typing headline (B-13)", () => {
 
   test("keeps one height for every greeting and role, so the page below never jumps", async ({ page }) => {
     await page.goto("/");
-    for (const width of [320, 360, 389, 390, 430, 480, 540, 599, 600, 680, 760, 820, 960, 961, 1024, 1280, 1440, 1920]) {
+    await page.addStyleTag({ content: ".hero h1 { letter-spacing: 0.04em }" }); // stands in for a wider fallback font
+    for (const width of [321, 320, 360, 389, 390, 430, 480, 540, 599, 600, 680, 760, 820, 960, 961, 1024, 1280, 1440, 1920]) {
       await page.setViewportSize({ width, height: 800 });
       await page.waitForFunction((w) => innerWidth === w, width);
       await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))); // WebKit resizes asynchronously
