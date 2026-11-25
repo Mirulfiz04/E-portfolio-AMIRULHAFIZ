@@ -1,14 +1,8 @@
-OPTIONAL project cover screenshots.
+This folder is not used by the site today.
 
-Add PNG/JPG screenshots with these exact names and they will appear
-automatically on the matching project card:
+Project cover images live directly in assets/ (project1.jpg, project2.jpg,
+project3.jpg, project4.png, project-suptulang.jpg) and are named by the `img`
+field of each entry in the `projects` array in js/script.js.
 
-    meds.png       -> Multimodal Emotional Detection System
-    finsafe.png    -> FinSafe Mobile Application
-    savings.png    -> Savings Goals Application
-    portfolio.png  -> Personal Portfolio Website
-
-Recommended size: 1200x640px (16:8.5). If an image is missing, the card
-shows a clean gradient cover with an icon instead — nothing breaks.
-
-You can delete this README.txt once your screenshots are added.
+To change a cover, replace the file or point `img` at a new one, then run
+`npm run check:assets` to confirm the file exists.

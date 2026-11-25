@@ -28,6 +28,7 @@ js/script.js      all behaviour; project data is the `projects` array near the t
                   photos are the `moments` array
 assets/           portrait, project covers, gallery photos, reports
 about.html …      old pages, now redirects to the matching section
+docs/             architecture, decisions, known issues, team log (start at docs/README.md)
 tests/            browser tests (Playwright, phone + desktop)
 scripts/          static test server and the missing-file checker
 .github/          CI workflow, deploy workflow, issue forms, PR template, Dependabot
@@ -68,6 +69,10 @@ Then open http://localhost:8000.
 The site has no build step, but every change is still checked before it ships: ESLint, HTML validation, a missing-file check and real-browser tests at phone and desktop size run in GitHub Actions on every pull request. Run the same checks locally with `npm ci && npm run check`.
 
 Work is tracked as GitHub issues and moves through issue → branch → pull request → CI → merge → deploy. The full process, including the one-time repository settings, is in [CONTRIBUTING.md](CONTRIBUTING.md), and [CHANGELOG.md](CHANGELOG.md) is the dated timeline of everything that has changed.
+
+## Documentation
+
+Start at [docs/README.md](docs/README.md): how the pieces fit ([architecture](docs/architecture.md)), why choices were made ([decisions](docs/decisions/)), what is still broken ([known issues](docs/known-issues.md)) and who is doing what ([team log](docs/team-log.md)).
 
 ## Deploy
 
