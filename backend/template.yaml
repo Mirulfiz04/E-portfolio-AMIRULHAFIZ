@@ -1,0 +1,270 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Portfolio guestbook and visit counter (API Gateway HTTP API + Lambda + DynamoDB). Learning project.
+
+Parameters:
+  AllowedOrigin:
+    Type: String
+    Default: https://mirulfiz04.github.io
+    AllowedPattern: '^(https://[a-z0-9.-]+|http://localhost:[0-9]+)$'
+    Description: The only browser origin allowed to call the API (no trailing slash). Prod must be the https site; http://localhost:PORT is accepted for a dev stack.
+  LogRetentionDays:
+    Type: Number
+    Default: 14
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90]
+    Description: How long CloudWatch keeps each function's logs.
+  MaxPending:
+    Type: Number
+    Default: 200
+    MinValue: 1
+    MaxValue: 1000
+    Description: Most unapproved reviews held at once. Beyond this, new reviews get a 503.
+  AlertEmail:
+    Type: String
+    Default: ""
+    Description: Email for cost alerts. Leave empty to skip creating the budget (then create one by hand, see the README).
+  MonthlyBudgetUsd:
+    Type: Number
+    Default: 5
+    MinValue: 1
+    Description: Monthly cost budget for the whole AWS account, in USD.
+
+Conditions:
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, ""]]
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures: [arm64]
+    MemorySize: 128
+    Timeout: 5
+    CodeUri: src/
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref ReviewsTable
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+        MAX_PENDING: !Ref MaxPending
+
+Resources:
+  # One table holds reviews (key: id) and the visit counter (id = COUNTER#visits).
+  ReviewsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        # Sparse index: the counter item has no "status", so it never appears here.
+        - IndexName: ReviewsByStatus
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: INCLUDE
+            NonKeyAttributes: [name, role, rating, comment]
+      # Retention: unapproved reviews carry expiresAt (30 days); DynamoDB deletes them on its own.
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref AllowedOrigin
+        AllowMethods: [GET, POST]
+        AllowHeaders: [content-type]
+        MaxAge: 3600
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 5
+        ThrottlingRateLimit: 2
+      RouteSettings:
+        "POST /reviews":
+          ThrottlingBurstLimit: 3
+          ThrottlingRateLimit: 1
+
+  CreateReviewFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: reviews.create
+      Description: Validates a guestbook review and stores it as pending
+      LoggingConfig:
+        LogGroup: !Ref CreateReviewLogs
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: dynamodb:PutItem
+              Resource: !GetAtt ReviewsTable.Arn
+            - Effect: Allow
+              Action: dynamodb:Query
+              Resource: !Sub "${ReviewsTable.Arn}/index/ReviewsByStatus"
+      Events:
+        Post:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /reviews
+            Method: POST
+  CreateReviewLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-create-review"
+      RetentionInDays: !Ref LogRetentionDays
+
+  ListReviewsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: reviews.list
+      Description: Returns approved reviews only
+      LoggingConfig:
+        LogGroup: !Ref ListReviewsLogs
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: dynamodb:Query
+              Resource: !Sub "${ReviewsTable.Arn}/index/ReviewsByStatus"
+      Events:
+        Get:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /reviews
+            Method: GET
+  ListReviewsLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-list-reviews"
+      RetentionInDays: !Ref LogRetentionDays
+
+  HitVisitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: visits.hit
+      Description: Counts one visit and returns the total
+      LoggingConfig:
+        LogGroup: !Ref HitVisitLogs
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            # LeadingKeys limits this function to the counter item, not the reviews.
+            - Effect: Allow
+              Action: dynamodb:UpdateItem
+              Resource: !GetAtt ReviewsTable.Arn
+              Condition:
+                ForAllValues:StringEquals:
+                  dynamodb:LeadingKeys: ["COUNTER#visits"]
+      Events:
+        Post:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /visits
+            Method: POST
+  HitVisitLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-hit-visit"
+      RetentionInDays: !Ref LogRetentionDays
+
+  GetVisitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: visits.get
+      Description: Returns the visit total without counting
+      LoggingConfig:
+        LogGroup: !Ref GetVisitLogs
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: dynamodb:GetItem
+              Resource: !GetAtt ReviewsTable.Arn
+              Condition:
+                ForAllValues:StringEquals:
+                  dynamodb:LeadingKeys: ["COUNTER#visits"]
+      Events:
+        Get:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /visits
+            Method: GET
+  GetVisitLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-get-visit"
+      RetentionInDays: !Ref LogRetentionDays
+
+  # Owner-only moderation. Deliberately has no Events: no URL, no API route. It can only be run
+  # with the Lambda Invoke API, which needs the owner's IAM permissions.
+  ModerateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: moderate.handler
+      Description: Owner-only moderation (invoke with the AWS CLI)
+      LoggingConfig:
+        LogGroup: !Ref ModerateLogs
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: dynamodb:Query
+              Resource: !Sub "${ReviewsTable.Arn}/index/ReviewsByStatus"
+            - Effect: Allow
+              Action: [dynamodb:UpdateItem, dynamodb:DeleteItem]
+              Resource: !GetAtt ReviewsTable.Arn
+  ModerateLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-moderate"
+      RetentionInDays: !Ref LogRetentionDays
+
+  # Budgets are account-wide and only alert (about a day late); they do not stop spending.
+  MonthlyBudget:
+    Type: AWS::Budgets::Budget
+    Condition: HasAlertEmail
+    Properties:
+      Budget:
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref MonthlyBudgetUsd
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 50
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref AlertEmail
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref AlertEmail
+
+Outputs:
+  ApiUrl:
+    Description: Base URL the site calls (no trailing slash)
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+  ModerateFunctionName:
+    Description: Function to invoke for moderation
+    Value: !Ref ModerateFunction
