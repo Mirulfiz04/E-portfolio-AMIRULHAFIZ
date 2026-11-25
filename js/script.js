@@ -903,7 +903,7 @@ const badges = {
   polyglot: ["🗣️", "Polyglot", "Said hi in another language"],
   secret: ["🎮", "Secret finder", "Found an easter egg"],
   quiz: ["🎯", "Top fan", "Got 4/4 in the quiz"],
-  review: ["✍️", "Critic", "Sent a review"],
+  review: ["✍️", "Critic", "Wrote a review"],
   proof: ["🗂️", "Fact checker", "Opened a proof folder"],
   desk: ["🖐️", "Tidy desk", "Spread the photos on the desk"],
   toolbox: ["🧰", "Toolbox tourist", "Tapped 5 different skills"]
@@ -1075,6 +1075,7 @@ rvForm.addEventListener("submit", async (e) => {
     location.href = `mailto:${REVIEW_TO}?subject=${encodeURIComponent("Portfolio review")}&body=${encodeURIComponent(body)}`;
     // nothing has been sent yet: the visitor still has to press send in their email app, so keep their text and claim no success
     rvMsg.textContent = `An email draft to ${REVIEW_TO} should have opened. Press send there to deliver your review. Nothing has been sent yet, and your text is still here.`;
+    unlock("review"); // for writing it: nothing here can tell whether the email was sent
     return;
   }
   const btn = rvForm.querySelector("[type=submit]");
