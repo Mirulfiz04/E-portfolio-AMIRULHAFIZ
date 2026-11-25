@@ -182,7 +182,10 @@ test.describe("Typing headline (B-13)", () => {
     await page.goto("/");
     for (const width of [320, 360, 389, 390, 430, 480, 540, 599, 600, 680, 760, 820, 960, 961, 1024, 1280, 1440, 1920]) {
       await page.setViewportSize({ width, height: 800 });
+      await page.waitForFunction((w) => innerWidth === w, width);
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))); // WebKit resizes asynchronously
       const heights = await page.evaluate(() => {
+        /* global hellos, roles */
         const h1 = document.querySelector(".hero h1"), type = document.querySelector("#type"), hello = document.querySelector("#hello");
         const seen = new Set();
         for (const [word] of hellos) for (const role of roles) for (let i = 0; i <= role.length; i++) {
