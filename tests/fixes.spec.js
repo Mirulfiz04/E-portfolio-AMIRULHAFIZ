@@ -50,7 +50,7 @@ test.describe("Guestbook without a form service", () => {
     await expect(msg).not.toContainText(/thank you/i);
     await expect(page.locator('#rvForm [name="comment"]')).toHaveValue("Lovely portfolio, well done.");
     await expect(page.locator('#rvForm [name="name"]')).toHaveValue("Ada");
-    expect(await page.evaluate(() => localStorage.getItem("badges") || "")).not.toContain("review");
+    expect(await page.evaluate(() => localStorage.getItem("badges") || "")).toContain("review"); // B-11: earned by writing it
     expect(pageErrors).toEqual([]);
   });
 });
