@@ -53,7 +53,14 @@
     });
   }
 
-  if (!window.gsap || !window.ScrollTrigger) return;
+  if (!window.gsap || !window.ScrollTrigger) {
+    // Lenis only moves the page when raf() is called every frame; without GSAP's ticker nothing would call it and wheel scrolling would freeze
+    if (lenis) {
+      const frame = (t) => { lenis.raf(t); requestAnimationFrame(frame); };
+      requestAnimationFrame(frame);
+    }
+    return;
+  }
   gsap.registerPlugin(ScrollTrigger);
   if (lenis) {
     lenis.on("scroll", ScrollTrigger.update);

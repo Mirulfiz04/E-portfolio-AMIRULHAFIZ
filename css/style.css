@@ -202,6 +202,7 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 /* ===== Projects ===== */
 .proj-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filters[hidden] { display: none; } /* display:flex above would otherwise beat the hidden attribute, e.g. the guestbook sort with fewer than 2 reviews */
 .chip { min-height: 40px; padding: 6px 16px; font: 500 0.9rem var(--font); color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; transition: all 0.2s; }
 .chip:hover { color: var(--text); }
 .chip[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
@@ -554,7 +555,8 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
 @media (max-width: 1080px) {
   .menu-btn { display: grid; }
   .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; padding: 8px 16px 16px; background: var(--bg); border-bottom: 1px solid var(--border); box-shadow: var(--shadow); }
-  .nav.open { display: flex; animation: rise 0.25s var(--ease); }
+  /* the menu is taller than a landscape phone (about 410px of links): cap it to the screen below the header (72px covers it) and let it scroll */
+  .nav.open { display: flex; animation: rise 0.25s var(--ease); max-height: calc(100vh - 72px); max-height: calc(100dvh - 72px); overflow-y: auto; overscroll-behavior: contain; }
   .nav a { padding: 12px; font-size: 1.05rem; }
   .nav a::after { left: 12px; right: auto; width: 24px; }
 }

@@ -10,4 +10,6 @@ exclude:
   - test-results
   - scripts
   - tests
+  - docs
+  - backend
   - CONTRIBUTING.md

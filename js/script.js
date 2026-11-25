@@ -431,8 +431,9 @@ list.innerHTML = projects.map((p) => `
   </article>`).join("");
 observeReveals($$(".reveal"));
 
-$$(".filters .chip").forEach((chip) => chip.addEventListener("click", () => {
-  $$(".filters .chip").forEach((c) => c.setAttribute("aria-pressed", c === chip));
+// .proj-head only: other chip groups (the guestbook sort, the lesson themes) also sit in a .filters box and must not hide projects
+$$(".proj-head .chip").forEach((chip) => chip.addEventListener("click", () => {
+  $$(".proj-head .chip").forEach((c) => c.setAttribute("aria-pressed", c === chip));
   const f = chip.dataset.filter;
   const apply = () => $$(".p-card").forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
   vt(apply);
@@ -848,10 +849,13 @@ const ago = (d) => {
 };
 const langColor = { Dart: "#00b4ab", TypeScript: "#3178c6", PHP: "#777bb4", Java: "#b07219", CSS: "#663399", Python: "#3572a5", JavaScript: "#f1e05a" };
 let repos = [];
+const isRepo = (r) => r && typeof r.name === "string" && /^https:\/\/github\.com\//.test(r.html_url)
+  && typeof r.pushed_at === "string" && (r.language == null || typeof r.language === "string");
 async function loadRepos() {
   try {
-    const cached = sessionStorage.getItem("gh-repos");
-    if (cached) return JSON.parse(cached);
+    // only trust a cached list that has exactly the shape we stored; anything else (edited, truncated, old format) is refetched
+    const cached = JSON.parse(sessionStorage.getItem("gh-repos"));
+    if (Array.isArray(cached) && cached.every(isRepo)) return cached;
   } catch (e) {}
   const res = await fetch("https://api.github.com/users/Mirulfiz04/repos?sort=pushed&per_page=30");
   if (!res.ok) throw new Error(res.status);
@@ -869,9 +873,9 @@ new IntersectionObserver(async ([e], obs) => {
   try {
     repos = await loadRepos();
     if (!repos.length) return;
-    $("#ghList").innerHTML = repos.map((r) => `<li><a href="${r.html_url}" target="_blank" rel="noopener">
+    $("#ghList").innerHTML = repos.map((r) => `<li><a href="${esc(r.html_url)}" target="_blank" rel="noopener">
       <b>${esc(r.name)}</b>
-      <span class="gh-meta">${r.language ? `<i style="background:${langColor[r.language] || "var(--muted)"}"></i>${r.language} · ` : ""}updated ${ago(r.pushed_at)}</span></a></li>`).join("");
+      <span class="gh-meta">${r.language ? `<i style="background:${langColor[r.language] || "var(--muted)"}"></i>${esc(r.language)} · ` : ""}updated ${ago(r.pushed_at)}</span></a></li>`).join("");
     $("#ghActivity").hidden = false;
     $("#ghActivity").classList.add("in");
   } catch (err) { /* API down or rate-limited: the section just stays hidden */ }
@@ -883,7 +887,7 @@ Object.assign(cmds, {
   resume: () => cmds.cv(),
   github: async () => {
     try { repos = repos.length ? repos : await loadRepos(); } catch { return `Couldn’t reach GitHub. Visit <a href="https://github.com/Mirulfiz04" target="_blank" rel="noopener">github.com/Mirulfiz04</a>`; }
-    return repos.map((r) => `<span class="c">${esc(r.name).padEnd(36)}</span> ${(r.language || "").padEnd(11)} <span class="d">${ago(r.pushed_at)}</span>`).join("\n");
+    return repos.map((r) => `<span class="c">${esc(r.name).padEnd(36)}</span> ${esc(r.language || "").padEnd(11)} <span class="d">${ago(r.pushed_at)}</span>`).join("\n");
   }
 });
 
@@ -1069,7 +1073,9 @@ rvForm.addEventListener("submit", async (e) => {
   if (!FORMSPREE_ID) {
     const body = `Rating: ${f.get("rating")}/5\nName: ${f.get("name")}\nRole: ${f.get("role")}\n\n${f.get("comment")}`;
     location.href = `mailto:${REVIEW_TO}?subject=${encodeURIComponent("Portfolio review")}&body=${encodeURIComponent(body)}`;
-    return done();
+    // nothing has been sent yet: the visitor still has to press send in their email app, so keep their text and claim no success
+    rvMsg.textContent = `An email draft to ${REVIEW_TO} should have opened. Press send there to deliver your review. Nothing has been sent yet, and your text is still here.`;
+    return;
   }
   const btn = rvForm.querySelector("[type=submit]");
   btn.disabled = true; rvMsg.textContent = "Sending…";
