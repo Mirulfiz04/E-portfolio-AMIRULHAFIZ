@@ -24,7 +24,7 @@ test.describe("All three animation libraries blocked", () => {
   });
 });
 
-// B-04 (fixed in b4873c0): with no Formspree ID the guestbook only opens a mail draft, so it must not say "Thank you!"
+// B-04 (fixed in d725eed): with no Formspree ID the guestbook only opens a mail draft, so it must not say "Thank you!"
 test.describe("Guestbook form", () => {
   test("does not claim the review was sent when it only opened an email draft", async ({ page }) => {
     await page.goto("/");

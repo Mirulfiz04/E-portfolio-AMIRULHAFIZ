@@ -83,7 +83,7 @@ test.describe("Animated path (all three libraries load)", () => {
   test("the hero drifts up as you scroll and comes back when you return", async ({ page }) => {
     await page.goto("/");
     await expect.poll(() => libsLoaded(page)).toEqual({ gsap: true, st: true, lenis: true });
-    // .hero-copy only: the old selector ".hero-copy, .hero > div" matched the outer grid and dimmed the MEDS card too (fixed in 31602a9)
+    // .hero-copy only: the old selector ".hero-copy, .hero > div" matched the outer grid and dimmed the MEDS card too (fixed in f5f6568)
     const heroOpacity = () => page.evaluate(() => Number(getComputedStyle(document.querySelector(".hero-copy")).opacity));
     await page.mouse.move(600, 400);
     await page.mouse.wheel(0, 500);
@@ -156,7 +156,7 @@ test.describe("Animated path with reduced motion", () => {
 // CDN partly down: each combination must leave a page that still scrolls and shows its content.
 // (All three blocked needs no network, so it lives in qa-fallback.spec.js.)
 const PARTIAL = [
-  // B-02 (fixed in b4873c0): Lenis only ticked from gsap.ticker, so without GSAP or ScrollTrigger it swallowed the wheel
+  // B-02 (fixed in d725eed): Lenis only ticked from gsap.ticker, so without GSAP or ScrollTrigger it swallowed the wheel
   { name: "GSAP blocked, Lenis loads", block: ["gsap"] },
   { name: "ScrollTrigger blocked, GSAP and Lenis load", block: ["scrolltrigger"] },
   { name: "Lenis blocked, GSAP loads", block: ["lenis"] }

@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures.js";
 
-// Acceptance criteria D1-D3 of the Designer's motion spec (docs/design/motion-spec.md @ fad4d98), items 1-3:
+// Acceptance criteria D1-D3 of the Designer's motion spec (docs/design/motion-spec.md @ 59f02fb), items 1-3:
 //   D1 Set the mood (MEDS widget + hero network)   D2 Send a heartbeat (MEDS architecture)   D3 Cards that travel (project filters + Details dialog)
 // Written from the spec, not from the developer's tests. Runs with every CDN blocked, which the spec says must behave identically.
 // The version with the real GSAP/Lenis is in qa-motion.spec.js (opt-in). Timing-sensitive cases: run with --repeat-each to check for flakiness.

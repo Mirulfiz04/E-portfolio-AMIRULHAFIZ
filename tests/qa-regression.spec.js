@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures.js";
 
-// Regression checks for the folder fix (bb08f34) and for the global `[hidden] { display: none !important }` rule.
+// Regression checks for the folder fix (e35715a) and for the global `[hidden] { display: none !important }` rule.
 // Every element the HTML or JS hides is exercised in each state it can be in: visible when it should be, hidden when it should be.
 // Needs no internet: third-party requests are blocked by the shared fixture; the APIs the page calls are stubbed per test.
 

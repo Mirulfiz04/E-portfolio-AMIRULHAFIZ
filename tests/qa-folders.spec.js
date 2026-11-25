@@ -32,7 +32,7 @@ for (const w of [320, 390, 430, 760, 761, 1280]) {
 
     for (const i of [0, 1, 2]) {
       test(`folder ${i + 1}: its files appear right below it, above the next folder`, async ({ page, press }) => {
-        // B-05 (fixed in bb08f34): the shared #foldBody used to sit after the LAST folder, so on one column folders 1 and 2 opened far below them
+        // B-05 (fixed in e35715a): the shared #foldBody used to sit after the LAST folder, so on one column folders 1 and 2 opened far below them
         await page.goto("/");
         const folder = page.locator(".folder").nth(i);
         // .reveal keeps #folders 24px low until it has scrolled well into view; measure only after that
@@ -64,7 +64,7 @@ test.describe("Folder state", () => {
   });
 
   test("closing a folder hides its files", async ({ page, press }) => {
-    // B-06 (fixed in bb08f34): foldBody.hidden = true used to be overridden by `.fold-body { display: grid }`, so the files stayed on screen
+    // B-06 (fixed in e35715a): foldBody.hidden = true used to be overridden by `.fold-body { display: grid }`, so the files stayed on screen
     await page.goto("/");
     const f = page.locator(".folder").first();
     await press(f);
@@ -81,7 +81,7 @@ test.describe("Folder state", () => {
   });
 
   test("folder icons sit inside the front panel, not over its top edge", async ({ page }) => {
-    // B-09 (cosmetic, fixed in bb08f34): at phone width the emoji box used to start ~5px above the front panel's top edge
+    // B-09 (cosmetic, fixed in e35715a): at phone width the emoji box used to start ~5px above the front panel's top edge
     await page.goto("/");
     const over = await page.evaluate(() =>
       [...document.querySelectorAll(".folder")].map((f) => f.querySelector(".f-front").getBoundingClientRect().top - f.querySelector(".f-ico").getBoundingClientRect().top).filter((d) => d > 0.5)
@@ -90,7 +90,7 @@ test.describe("Folder state", () => {
   });
 
   test("keyboard: after Enter on a folder the next Tab stop is one of its files", async ({ page }) => {
-    // B-05 again (fixed in bb08f34): the panel used to be after the last folder, so Tab went to the next folder first
+    // B-05 again (fixed in e35715a): the panel used to be after the last folder, so Tab went to the next folder first
     await page.goto("/");
     await page.locator(".folder").first().focus();
     await page.keyboard.press("Enter");
@@ -102,7 +102,7 @@ test.describe("Folder state", () => {
 test.describe("The hidden attribute", () => {
   for (const [name, vp] of [["phone", { width: 390, height: 844 }], ["desktop", { width: 1280, height: 800 }]]) {
     test(`every element with [hidden] is really hidden (${name})`, async ({ page }) => {
-      // B-06/B-07/B-08 (fixed: .rv-sort in b4873c0, the rest by the global `[hidden] { display: none !important }` in bb08f34):
+      // B-06/B-07/B-08 (fixed: .rv-sort in d725eed, the rest by the global `[hidden] { display: none !important }` in e35715a):
       // author CSS `display` used to beat the UA's [hidden] rule.
       await page.setViewportSize(vp);
       await page.goto("/");

@@ -107,7 +107,7 @@ test.describe("Links and images", () => {
 });
 
 test.describe("Old page URLs (redirect stubs)", () => {
-  // B-03 (fixed in b4873c0): the stubs used to declare a relative canonical with a #fragment, which search engines ignore.
+  // B-03 (fixed in d725eed): the stubs used to declare a relative canonical with a #fragment, which search engines ignore.
   for (const file of ["about.html", "academic.html", "contact.html", "qualities.html", "works.html"]) {
     test(`${file} has an absolute canonical without a fragment`, async ({ request }) => {
       const html = await (await request.get("/" + file)).text();
@@ -126,7 +126,7 @@ test.describe("Internal files are not published", () => {
   });
 
   test("docs/ (QA plan, design specs) is not published", async ({ request }) => {
-    // B-10 (fixed in b4873c0): `docs` and `backend` are in the exclude list of _config.yml. Only meaningful when docs/ exists in the tree.
+    // B-10 (fixed in d725eed): `docs` and `backend` are in the exclude list of _config.yml. Only meaningful when docs/ exists in the tree.
     expect((await request.get("/docs/qa/test-plan.md")).status()).toBe(404);
   });
 });
