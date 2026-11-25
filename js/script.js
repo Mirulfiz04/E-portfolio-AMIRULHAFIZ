@@ -221,7 +221,7 @@ const projects = [
     tags: ["C++", "MySQL", "SQL", "Data modelling"],
     links: [
       { label: "GitHub", href: "https://github.com/Mirulfiz04/Event-Management-System-workshop1" },
-      { label: "Report (PDF)", href: "assets/reports/Final Report AMIRUL HAFIZ BIN ANUAR B032310657.pdf" }
+      { label: "Report (PDF)", href: "assets/reports/event-management-system-report.pdf" }
     ]
   }
 ];
@@ -703,7 +703,7 @@ const folders = [
   { k: "events", icon: "📸", name: "Teaching & events", items: ["cip2026-workshop", "cip2026-mentoring", "cip2026-school-visit", "arduino2026-workshop", "arduino2026-prize", "cip2026-donation"] },
   { k: "reports", icon: "📄", name: "Reports & posters", items: ["w2-poster",
     { label: "FarmIntel report", sub: "PDF · 3.5 MB", href: "assets/reports/FarmIntel-Fruit & Vegetable Disease Detector Group 28.pdf" },
-    { label: "Event Management System report", sub: "PDF · 1.6 MB", href: "assets/reports/Final Report AMIRUL HAFIZ BIN ANUAR B032310657.pdf" }] }
+    { label: "Event Management System report", sub: "PDF · 1.6 MB", href: "assets/reports/event-management-system-report.pdf" }] }
 ];
 $("#folders").innerHTML = folders.map((f) => {
   const peek = f.items.filter((x) => typeof x === "string").slice(0, 2).map((n) => `<img src="${moments[momentIdx(n)].src}" alt="" loading="lazy" />`).join("");
