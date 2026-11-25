@@ -62,6 +62,9 @@ p { margin: 0 0 1em; }
 .muted { color: var(--muted); }
 .small { font-size: 0.9rem; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+/* The browser's own [hidden] rule loses to any class that sets display (.fold-body, .rv-stat, .filters ...), so a hidden element stayed on screen.
+   !important keeps it hidden everywhere; the print rule .p-card[hidden] is more specific, so it can still show every project on paper. */
+[hidden] { display: none !important; }
 ::selection { background: var(--accent); color: var(--accent-ink); }
 .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
 .section { padding: clamp(64px, 10vw, 120px) 0 0; }
@@ -162,8 +165,15 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .pill-sm { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
 .meds-face { font-size: 4.2rem; line-height: 1.2; text-align: center; margin: 12px 0 4px; }
 .meds-face.pop { animation: pop 0.5s var(--ease); }
+/* "Set the mood": one row of five 44px buttons (236px with the gaps) even at 320px */
+.mood { display: flex; justify-content: center; gap: 4px; margin: 0 0 8px; }
+.mood-btn { flex: none; width: 44px; height: 44px; padding: 0; font-size: 1.3rem; line-height: 1; color: var(--text); background: var(--surface); border: 1px solid var(--muted); border-radius: 12px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
+.mood-btn:hover { border-color: var(--accent); }
+.mood-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 @keyframes pop { 40% { transform: scale(1.25) rotate(-8deg); } }
 .meds-label { text-align: center; }
+/* on the narrowest phones "Detected emotion: Surprised 92%" can wrap while "Calm" does not, which made the card jump in height when the mood changed: keep two lines */
+@media (max-width: 360px) { .meds-label { min-height: 3.6em; } } /* a little over two lines: the mono confidence value makes a wrapped label about 1px taller than exactly 2 line-heights */
 .meds-vitals { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
 .meds-vitals > div { padding: 12px; border-radius: 12px; background: var(--surface-2); }
 .meds-vitals span.muted { display: block; font-size: 0.8rem; }
@@ -202,6 +212,7 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 /* ===== Projects ===== */
 .proj-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filters[hidden] { display: none; } /* display:flex above would otherwise beat the hidden attribute, e.g. the guestbook sort with fewer than 2 reviews */
 .chip { min-height: 40px; padding: 6px 16px; font: 500 0.9rem var(--font); color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; transition: all 0.2s; }
 .chip:hover { color: var(--text); }
 .chip[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: transparent; }
@@ -367,7 +378,7 @@ dialog[open] { animation: rise 0.35s var(--ease); }
 .f-peek img { position: absolute; width: 46%; aspect-ratio: 4 / 3; object-fit: cover; top: 18px; border: 4px solid #fff; border-radius: 4px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); transition: transform 0.45s var(--ease); }
 .f-peek img:first-child { left: 14%; transform: rotate(-6deg); }
 .f-peek img:nth-child(2) { right: 14%; transform: rotate(5deg); }
-.f-front { position: absolute; inset: 70px 0 0; display: grid; align-content: end; gap: 2px; padding: 16px 18px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 22%, var(--bg-2)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); backdrop-filter: blur(6px); transition: transform 0.45s var(--ease); transform-origin: bottom; }
+.f-front { position: absolute; inset: auto 0 0; min-height: calc(100% - 70px); /* grows up if a wider font wraps the name */ display: grid; align-content: end; gap: 2px; padding: 16px 18px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 22%, var(--bg-2)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); backdrop-filter: blur(6px); transition: transform 0.45s var(--ease); transform-origin: bottom; }
 .f-ico { font-size: 1.5rem; }
 .f-front small { color: var(--muted); font: 0.75rem var(--mono); }
 .folder[aria-expanded="true"] .f-peek img:first-child { transform: translateY(var(--lift-1)) rotate(-10deg); }
@@ -460,6 +471,9 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
 .node span { font-size: 1.6rem; }
 .node small { color: var(--muted); font-weight: 400; }
 .node.on { border-style: solid; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); transform: translateY(-3px); }
+/* "Send a heartbeat": a dot travels node to node; it lives inside #arch (position: relative) and never takes pointer events */
+.beat-row { margin: 14px 0 0; }
+.beat-dot { position: absolute; left: 0; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); pointer-events: none; }
 .arch-info { margin: 16px 0 0; padding: 14px 16px; min-height: 5.5em; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 12px 12px 0; }
 .pipe { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin-bottom: 18px; }
 .pipe::before { content: "→"; grid-column: 2; grid-row: 1; font-size: 1.6rem; color: var(--muted); }
@@ -554,7 +568,8 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
 @media (max-width: 1080px) {
   .menu-btn { display: grid; }
   .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; padding: 8px 16px 16px; background: var(--bg); border-bottom: 1px solid var(--border); box-shadow: var(--shadow); }
-  .nav.open { display: flex; animation: rise 0.25s var(--ease); }
+  /* the menu is taller than a landscape phone (about 410px of links): cap it to the screen below the header (72px covers it) and let it scroll */
+  .nav.open { display: flex; animation: rise 0.25s var(--ease); max-height: calc(100vh - 72px); max-height: calc(100dvh - 72px); overflow-y: auto; overscroll-behavior: contain; }
   .nav a { padding: 12px; font-size: 1.05rem; }
   .nav a::after { left: 12px; right: auto; width: 24px; }
 }
@@ -572,10 +587,13 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .tabs { flex-wrap: wrap; }
   .folders { grid-template-columns: 1fr; gap: 14px; }
   /* fixed photo size (not % of width) so they always sit behind the front panel, whatever the phone width */
-  .folder { height: 160px; --lift-1: -28px; --lift-2: -22px; --persp: 1200px; --tilt: -10deg; }
+  /* 168px, not 160: icon + name + count are 84px and the front panel (bottom-aligned, 16px padding) used to be 5px too short, so the icon poked above its edge */
+  .folder { height: 168px; --lift-1: -28px; --lift-2: -22px; --persp: 1200px; --tilt: -10deg; }
   .f-peek img { top: 12px; width: 120px; height: 90px; }
-  .f-front { inset: 64px 0 0; }
+  .f-front { min-height: calc(100% - 64px); }
   .fold-body { grid-template-columns: 1fr 1fr; }
+  .beat-row { text-align: right; } /* the fixed trophy sits bottom-left and used to cover a left-aligned button */
+  .folders > .fold-body { margin-top: 0; } /* on one column the files sit between two folders, 14px from each like the folders themselves */
   .moments.desk { height: 480px; }
   .moments.desk .moment { width: 150px; }
   .footer { padding-bottom: 80px; } /* room for the floating trophy */
@@ -611,7 +629,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   :root, :root[data-theme] { --bg: #fff; --bg-2: #fff; --surface: #fff; --surface-2: #f3f4f6; --border: #d1d5db; --text: #111; --muted: #444; --accent: #006b55; --accent-2: #333; --accent-ink: #fff; color-scheme: light; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
   body { font-size: 10.5pt; line-height: 1.45; background: #fff; }
-  #lessons, #evidence, #deskMode, .proof, .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #reviews, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
+  #sendBeat, #beatStatus, .beat-dot, #lessons, #evidence, #deskMode, .proof, .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #reviews, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
   .print-head { display: block; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 2px solid #006b55; }
   .print-head h1 { font-size: 20pt; margin: 0 0 2px; }
   .print-head p { margin: 0; font-size: 9.5pt; color: #333; }

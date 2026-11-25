@@ -53,7 +53,14 @@
     });
   }
 
-  if (!window.gsap || !window.ScrollTrigger) return;
+  if (!window.gsap || !window.ScrollTrigger) {
+    // Lenis only moves the page when raf() is called every frame; without GSAP's ticker nothing would call it and wheel scrolling would freeze
+    if (lenis) {
+      const frame = (t) => { lenis.raf(t); requestAnimationFrame(frame); };
+      requestAnimationFrame(frame);
+    }
+    return;
+  }
   gsap.registerPlugin(ScrollTrigger);
   if (lenis) {
     lenis.on("scroll", ScrollTrigger.update);
@@ -73,7 +80,8 @@
   });
 
   /* ---------- Hero drifts away as you scroll ---------- */
-  const heroIn = document.querySelector(".hero-copy, .hero > div");
+  // .hero-copy only: the old list ".hero-copy, .hero > div" matched the outer .hero-grid first, so the MEDS card and its mood buttons faded too
+  const heroIn = document.querySelector(".hero-copy");
   if (heroIn) gsap.to(heroIn, { yPercent: -14, opacity: 0.25, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
 
   /* ---------- Folders and stats pop in with a little bounce ---------- */
