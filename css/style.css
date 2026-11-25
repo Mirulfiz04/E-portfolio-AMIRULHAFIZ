@@ -62,6 +62,9 @@ p { margin: 0 0 1em; }
 .muted { color: var(--muted); }
 .small { font-size: 0.9rem; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+/* The browser's own [hidden] rule loses to any class that sets display (.fold-body, .rv-stat, .filters ...), so a hidden element stayed on screen.
+   !important keeps it hidden everywhere; the print rule .p-card[hidden] is more specific, so it can still show every project on paper. */
+[hidden] { display: none !important; }
 ::selection { background: var(--accent); color: var(--accent-ink); }
 .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
 .section { padding: clamp(64px, 10vw, 120px) 0 0; }
@@ -368,7 +371,7 @@ dialog[open] { animation: rise 0.35s var(--ease); }
 .f-peek img { position: absolute; width: 46%; aspect-ratio: 4 / 3; object-fit: cover; top: 18px; border: 4px solid #fff; border-radius: 4px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25); transition: transform 0.45s var(--ease); }
 .f-peek img:first-child { left: 14%; transform: rotate(-6deg); }
 .f-peek img:nth-child(2) { right: 14%; transform: rotate(5deg); }
-.f-front { position: absolute; inset: 70px 0 0; display: grid; align-content: end; gap: 2px; padding: 16px 18px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 22%, var(--bg-2)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); backdrop-filter: blur(6px); transition: transform 0.45s var(--ease); transform-origin: bottom; }
+.f-front { position: absolute; inset: auto 0 0; min-height: calc(100% - 70px); /* grows up if a wider font wraps the name */ display: grid; align-content: end; gap: 2px; padding: 16px 18px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 22%, var(--bg-2)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); backdrop-filter: blur(6px); transition: transform 0.45s var(--ease); transform-origin: bottom; }
 .f-ico { font-size: 1.5rem; }
 .f-front small { color: var(--muted); font: 0.75rem var(--mono); }
 .folder[aria-expanded="true"] .f-peek img:first-child { transform: translateY(var(--lift-1)) rotate(-10deg); }
@@ -574,10 +577,12 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .tabs { flex-wrap: wrap; }
   .folders { grid-template-columns: 1fr; gap: 14px; }
   /* fixed photo size (not % of width) so they always sit behind the front panel, whatever the phone width */
-  .folder { height: 160px; --lift-1: -28px; --lift-2: -22px; --persp: 1200px; --tilt: -10deg; }
+  /* 168px, not 160: icon + name + count are 84px and the front panel (bottom-aligned, 16px padding) used to be 5px too short, so the icon poked above its edge */
+  .folder { height: 168px; --lift-1: -28px; --lift-2: -22px; --persp: 1200px; --tilt: -10deg; }
   .f-peek img { top: 12px; width: 120px; height: 90px; }
-  .f-front { inset: 64px 0 0; }
+  .f-front { min-height: calc(100% - 64px); }
   .fold-body { grid-template-columns: 1fr 1fr; }
+  .folders > .fold-body { margin-top: 0; } /* on one column the files sit between two folders, 14px from each like the folders themselves */
   .moments.desk { height: 480px; }
   .moments.desk .moment { width: 150px; }
   .footer { padding-bottom: 80px; } /* room for the floating trophy */

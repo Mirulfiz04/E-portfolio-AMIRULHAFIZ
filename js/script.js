@@ -712,6 +712,17 @@ $("#folders").innerHTML = folders.map((f) => {
     <span class="f-peek">${peek}</span><span class="f-front"><span class="f-ico" aria-hidden="true">${f.icon}</span><b>${f.name}</b><small>${f.items.length} files</small></span></button>`;
 }).join("");
 const foldBody = $("#foldBody");
+// One shared panel. On one column (same 760px breakpoint as .folders in the CSS) it goes directly after the tapped folder, on screen and
+// in the DOM, so Tab reaches its files next. From 761px it stays under the whole row of three.
+const foldOneColumn = matchMedia("(max-width: 760px)");
+function placeFoldBody(openFolder) {
+  const at = foldOneColumn.matches && openFolder ? openFolder : $("#folders");
+  if (foldBody.previousElementSibling === at) return;
+  const keep = foldBody.contains(document.activeElement) ? document.activeElement : null; // moving a node in the DOM drops focus from inside it
+  at.after(foldBody);
+  keep?.focus({ preventScroll: true });
+}
+foldOneColumn.addEventListener("change", () => placeFoldBody($('.folder[aria-expanded="true"]')));
 $("#folders").addEventListener("click", (e) => {
   const b = e.target.closest(".folder");
   if (!b) return;
@@ -719,6 +730,7 @@ $("#folders").addEventListener("click", (e) => {
   $$(".folder").forEach((x) => x.setAttribute("aria-expanded", "false"));
   if (open) { foldBody.hidden = true; return; }
   b.setAttribute("aria-expanded", "true");
+  placeFoldBody(b); // move first, then fill: the polite live region announces the files where they now are
   const f = folders.find((x) => x.k === b.dataset.k);
   foldBody.innerHTML = f.items.map((x, n) => {
     if (typeof x !== "string") return `<a class="f-doc" style="--d:${n}" href="${encodeURI(x.href)}" target="_blank" rel="noopener"><span aria-hidden="true">📄</span><b>${x.label}</b><small>${x.sub} ↗</small></a>`;
