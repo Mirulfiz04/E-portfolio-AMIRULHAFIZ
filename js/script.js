@@ -330,6 +330,28 @@ function countUp(el) {
 }
 if (!reduceMotion) $$("[data-count]").forEach(countUp);
 
+/* ---------- Hero mood: one object shared by the MEDS widget (sets it) and the network background (follows it) ---------- */
+// [node speed, link distance in px, tint token]. Only the site's two accents are used, so both themes stay readable.
+const moods = { Calm: [0.5, 150, "--accent-2"], Neutral: [0.8, 130, "--accent"], Happy: [1, 130, "--accent"], Surprised: [1.5, 120, "--accent-2"], Excited: [1.9, 110, "--accent"] };
+const mood = {
+  chosen: null, speed: 1, link: 130, tintVar: "--accent", tint: "", from: null, to: null, t0: 0, ringAt: 0, redraw() {},
+  refreshTint() { this.tint = getComputedStyle(root).getPropertyValue(this.tintVar).trim(); }, // cached: read when the mood or theme changes, not every frame
+  set(name) { // a mood name, or null for the automatic cycle
+    const [speed, link, tintVar] = name ? moods[name] : [1, 130, "--accent"];
+    this.chosen = name; this.tintVar = tintVar; this.refreshTint();
+    if (reduceMotion) { this.speed = speed; this.link = link; this.redraw(); return; } // no easing, ring or movement
+    this.from = { speed: this.speed, link: this.link }; this.to = { speed, link };
+    this.t0 = performance.now(); this.ringAt = name ? this.t0 : 0;
+  },
+  step(now) { // ease speed and link distance to the target over 800 ms
+    if (!this.to) return;
+    const p = Math.min(1, (now - this.t0) / 800), e = 1 - (1 - p) ** 3;
+    this.speed = this.from.speed + (this.to.speed - this.from.speed) * e;
+    this.link = this.from.link + (this.to.link - this.from.link) * e;
+    if (p === 1) this.to = null;
+  }
+};
+
 /* ---------- Hero: interactive "neural net" background ---------- */
 (function net() {
   const cv = $("#net"), ctx = cv.getContext("2d");
@@ -342,29 +364,38 @@ if (!reduceMotion) $$("[data-count]").forEach(countUp);
     const n = Math.round(Math.min(90, (w * h) / 16000));
     nodes = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35 }));
   }
-  function draw() {
-    const accent = getComputedStyle(root).getPropertyValue("--accent").trim();
+  function draw(now = performance.now()) {
+    mood.step(now);
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = ctx.strokeStyle = accent;
+    ctx.fillStyle = ctx.strokeStyle = mood.tint;
+    // a chosen mood sends one ring out from the centre; it nudges nodes up to 12 px for 600 ms (drawn offset only, positions are untouched)
+    const rp = mood.ringAt ? (now - mood.ringAt) / 600 : 2, ringOn = rp >= 0 && rp < 1;
+    const cx = w / 2, cy = h / 2, R = Math.hypot(cx, cy) * (1 - (1 - rp) ** 3);
     for (const a of nodes) {
       if (!reduceMotion) {
-        a.x += a.vx; a.y += a.vy;
+        a.x += a.vx * mood.speed; a.y += a.vy * mood.speed;
         if (a.x < 0 || a.x > w) a.vx *= -1;
         if (a.y < 0 || a.y > h) a.vy *= -1;
         const dx = mouse.x - a.x, dy = mouse.y - a.y, d = Math.hypot(dx, dy);
         if (d < 160) { a.x -= dx * 0.012; a.y -= dy * 0.012; } // nodes shy away from the cursor
       }
+      a.ox = a.oy = 0;
+      if (ringOn) {
+        const rx = a.x - cx, ry = a.y - cy, rd = Math.hypot(rx, ry) || 1, push = 12 * Math.max(0, 1 - Math.abs(rd - R) / 60) * (1 - rp);
+        a.ox = (rx / rd) * push; a.oy = (ry / rd) * push;
+      }
     }
     for (let i = 0; i < nodes.length; i++) {
-      const a = nodes[i];
+      const a = nodes[i], ax = a.x + a.ox, ay = a.y + a.oy;
       for (let j = i + 1; j < nodes.length; j++) {
-        const b = nodes[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 130) { ctx.globalAlpha = (1 - d / 130) * 0.35; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+        const b = nodes[j], d = Math.hypot(ax - (b.x + b.ox), ay - (b.y + b.oy));
+        if (d < mood.link) { ctx.globalAlpha = (1 - d / mood.link) * 0.35; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(b.x + b.ox, b.y + b.oy); ctx.stroke(); }
       }
       const md = Math.hypot(a.x - mouse.x, a.y - mouse.y);
       ctx.globalAlpha = md < 160 ? 0.9 : 0.5;
-      ctx.beginPath(); ctx.arc(a.x, a.y, md < 160 ? 2.6 : 1.6, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(ax, ay, md < 160 ? 2.6 : 1.6, 0, 7); ctx.fill();
     }
+    if (ringOn) { ctx.globalAlpha = 0.5 * (1 - rp); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke(); ctx.lineWidth = 1; }
     ctx.globalAlpha = 1;
     if (running && !reduceMotion) requestAnimationFrame(draw);
   }
@@ -374,9 +405,11 @@ if (!reduceMotion) $$("[data-count]").forEach(countUp);
   addEventListener("resize", () => { size(); if (reduceMotion) draw(); });
   // pause when the hero is off screen
   new IntersectionObserver(([e]) => { const was = running; running = e.isIntersecting; if (running && !was && !reduceMotion) draw(); }).observe(hero);
-  sysLight.addEventListener("change", () => reduceMotion && draw());
-  size(); draw();
-  $("#themeBtn").addEventListener("click", () => reduceMotion && setTimeout(draw, 50));
+  mood.redraw = draw;
+  const retint = () => { mood.refreshTint(); if (reduceMotion) draw(); }; // the cached tint follows the theme; the loop picks it up on its next frame
+  sysLight.addEventListener("change", retint);
+  new MutationObserver(retint).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  mood.refreshTint(); size(); draw();
 })();
 
 /* ---------- Hero: MEDS widget (simulated) ---------- */
@@ -391,20 +424,31 @@ if (!reduceMotion) $$("[data-count]").forEach(countUp);
     ecg.setAttribute("points", pts.map((v, i) => `${i * 2},${v}`).join(" "));
   }
   for (let i = 0; i < 60; i++) ecgStep();
-  function next() {
-    si = (si + 1) % states.length;
+  function show(i) {
+    si = i;
     const [f, name, target] = states[si];
     face.textContent = f; emo.textContent = name;
     conf.textContent = `${84 + Math.floor(Math.random() * 14)}%`;
     bpm = target;
+    hr.textContent = target; // set directly: the heart-rate ticker below does not run with reduced motion
     face.classList.remove("pop"); void face.offsetWidth; face.classList.add("pop");
   }
+  const next = () => show((si + 1) % states.length);
   if (!reduceMotion) {
     setInterval(ecgStep, 60);
     setInterval(() => { hr.textContent = bpm + Math.round((Math.random() - 0.5) * 4); spo2.textContent = 97 + Math.round(Math.random() * 2); }, 900);
   }
-  setInterval(next, 3200);
-  face.addEventListener("click", next); // tiny extra: click the face to change it
+  let cycle = setInterval(next, 3200);
+  // "Set the mood": a chosen mood stops the automatic cycle and tints the hero network (see `mood`); pressing it again resumes the cycle
+  const moodBtns = $$(".mood-btn");
+  moodBtns.forEach((b) => b.addEventListener("click", () => {
+    const name = b.dataset.mood, again = mood.chosen === name;
+    moodBtns.forEach((x) => x.setAttribute("aria-pressed", !again && x === b));
+    clearInterval(cycle);
+    if (again) { mood.set(null); cycle = setInterval(next, 3200); return; }
+    show(states.findIndex((s) => s[1] === name));
+    mood.set(name);
+  }));
   // 3D tilt following the cursor
   if (!reduceMotion && matchMedia("(hover: hover)").matches) {
     card.addEventListener("pointermove", (e) => {
@@ -432,11 +476,32 @@ list.innerHTML = projects.map((p) => `
 observeReveals($$(".reveal"));
 
 // .proj-head only: other chip groups (the guestbook sort, the lesson themes) also sit in a .filters box and must not hide projects
+// Cards that travel (motion spec item 3): FLIP, not a view transition. Measure the visible cards, change `hidden`, measure again and
+// animate each staying card from where it was. Leaving cards go at once; entering cards fade and grow in.
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)", projCards = $$(".p-card"), projStatus = $("#projStatus");
+const shownCards = () => projCards.filter((c) => !c.hidden);
 $$(".proj-head .chip").forEach((chip) => chip.addEventListener("click", () => {
   $$(".proj-head .chip").forEach((c) => c.setAttribute("aria-pressed", c === chip));
   const f = chip.dataset.filter;
-  const apply = () => $$(".p-card").forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
-  vt(apply);
+  // a quick second press must start from the true layout: stop running card animations and drop the hover tilt before measuring
+  projCards.forEach((c) => { c.getAnimations().forEach((a) => a.cancel()); c.classList.remove("tilt"); });
+  const before = new Map(shownCards().map((c) => [c, c.getBoundingClientRect()]));
+  projCards.forEach((card) => { card.hidden = f !== "all" && !card.dataset.cats.includes(f); card.classList.add("in"); });
+  const shown = shownCards();
+  if (projStatus) projStatus.textContent = `${shown.length} project${shown.length === 1 ? "" : "s"} shown`; // missing in an older cached index.html
+  if (reduceMotion) return;
+  const onScreen = (r) => r.bottom > 0 && r.top < innerHeight, clamp = (v) => Math.max(-120, Math.min(120, v)); // one column on phones: cards would travel far
+  let n = 0;
+  for (const card of shown) {
+    const to = card.getBoundingClientRect(), from = before.get(card);
+    if (!from) {
+      if (onScreen(to)) card.animate([{ opacity: 0, transform: "scale(0.96)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: EASE, fill: "backwards" });
+      continue;
+    }
+    const dx = from.left - to.left, dy = from.top - to.top;
+    if ((!onScreen(from) && !onScreen(to)) || (Math.abs(dx) < 1 && Math.abs(dy) < 1)) continue;
+    card.animate([{ transform: `translate(${clamp(dx)}px, ${clamp(dy)}px)` }, { transform: "none" }], { duration: 420, delay: Math.min(n++ * 25, 150), easing: EASE, fill: "backwards" });
+  }
 }));
 
 /* ---------- What my projects taught me ---------- */
@@ -470,7 +535,7 @@ moreBtn.addEventListener("click", () => { lessonsOpen = true; lessonList.classLi
 renderLessons("all");
 
 const modal = $("#projectModal");
-function openProject(id) {
+function openProject(id, fromCard = null) { // fromCard: the card whose Details button was pressed; any other way in keeps today's entrance
   const p = projects.find((x) => x.id === id);
   if (!p) return false;
   $("#mBody").innerHTML = `${cover(p)}
@@ -490,12 +555,20 @@ function openProject(id) {
     </div>`;
   $$("dialog[open]").forEach((d) => d.close());
   modal.showModal();
+  if (fromCard && !reduceMotion) {
+    // grow out of the pressed card: origin at the card's centre, scale 0.94 -> 1 and opacity, instead of the CSS "rise"
+    const c = fromCard.getBoundingClientRect(), d = modal.getBoundingClientRect();
+    modal.style.animation = "none"; // cleared on close; clearing it now would restart "rise"
+    modal.style.transformOrigin = `${c.left + c.width / 2 - d.left}px ${c.top + c.height / 2 - d.top}px`;
+    modal.animate([{ opacity: 0, transform: "scale(0.94)" }, { opacity: 1, transform: "none" }], { duration: 280, easing: EASE });
+    modal.addEventListener("close", () => { modal.style.animation = ""; modal.style.transformOrigin = ""; }, { once: true });
+  }
   unlock("project");
   return true;
 }
 document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-open-project]");
-  if (t) { e.preventDefault(); openProject(t.dataset.openProject); }
+  if (t) { e.preventDefault(); openProject(t.dataset.openProject, t.classList.contains("p-more") ? t.closest(".p-card") : null); }
 });
 modal.addEventListener("click", (e) => { if (e.target === modal || e.target.closest("[data-close-modal]")) modal.close(); }); // backdrop or in-page link closes it
 
@@ -982,6 +1055,70 @@ $$("#arch .node").forEach((n) => {
   n.addEventListener("mouseenter", show); n.addEventListener("focus", show); n.addEventListener("click", show);
 });
 $('#arch .node[data-k="sensor"]').classList.add("on");
+
+/* ---------- Send a heartbeat: a reading travels sensor → app → ml → app → supa → edge → claude (motion spec item 2) ---------- */
+(function heartbeat() {
+  const arch = $("#arch"), btn = $("#sendBeat"), say = $("#beatStatus"), info = $("#archInfo");
+  if (!arch || !btn || !say || !info) return; // GitHub Pages ignores ?v=, so a cached older index.html can meet this script without the new controls
+  const ORDER = ["sensor", "app", "ml", "app", "supa", "edge", "claude"];
+  const LABEL = { idle: "▶ Send a heartbeat", next: "Next part →", again: "↻ Send again" };
+  const node = (k) => arch.querySelector(`.node[data-k="${k}"]`);
+  const nameOf = (n) => [...n.childNodes].find((c) => c.nodeType === 3).textContent.trim();
+  // where the dot rests: the top-centre edge of a node inside #arch, centred on the border (minus half the 12 px dot), so it never covers
+  // the icon or label; measured at the start of every hop because the grid is 2 columns on phones
+  const centre = (n) => { const a = arch.getBoundingClientRect(), r = n.getBoundingClientRect(); return [r.left - a.left + r.width / 2 - 6, r.top - a.top - 6]; };
+  let run = null, step = 0; // run = the heartbeat in progress: a stale one finds itself replaced and does nothing. step = reduced-motion stepping
+
+  function arrive(k, announce) {
+    const n = node(k);
+    $$("#arch .node").forEach((x) => x.classList.toggle("on", x === n));
+    info.textContent = archText[k];
+    if (announce) say.textContent = `Reading reached: ${nameOf(n)}`;
+    if (!reduceMotion) n.animate([{ scale: 1 }, { scale: 1.06 }, { scale: 1 }], { duration: 300, easing: EASE });
+  }
+  function stop(label = LABEL.idle, keepSay = false) { // back to a clean idle state: no dot, normal live region, enabled button
+    if (run) { clearTimeout(run.timer); run.dot.remove(); run.wake?.(); run = null; }
+    step = 0; info.setAttribute("aria-live", "polite"); btn.textContent = label;
+    if (!keepSay) say.textContent = ""; // a run that finished keeps its last "Reading reached" so it is still announced
+  }
+  async function go() {
+    const me = (run = { dot: document.createElement("span"), timer: 0, wake: null, hopping: false });
+    const live = () => run === me;
+    me.dot.className = "beat-dot"; me.dot.setAttribute("aria-hidden", "true");
+    arch.append(me.dot);
+    info.setAttribute("aria-live", "off"); // seven long texts would queue up; only "Reading reached: …" is announced
+    let [x, y] = centre(node(ORDER[0]));
+    me.dot.style.transform = `translate(${x}px, ${y}px)`;
+    for (let i = 0; i < ORDER.length; i++) {
+      if (i) {
+        btn.textContent = "Sending…"; me.hopping = true;
+        const [nx, ny] = centre(node(ORDER[i]));
+        await me.dot.animate([{ transform: `translate(${x}px, ${y}px)` }, { transform: `translate(${nx}px, ${ny}px)` }], { duration: 550, easing: EASE, fill: "forwards" }).finished.catch(() => {});
+        me.hopping = false; x = nx; y = ny;
+        if (!live()) return;
+      }
+      arrive(ORDER[i], true);
+      if (i === ORDER.length - 1) break;
+      btn.textContent = LABEL.next; // pressing it now skips the pause
+      await new Promise((res) => { me.wake = res; me.timer = setTimeout(res, 1400); });
+      if (!live()) return;
+    }
+    stop(LABEL.again, true);
+  }
+  btn.addEventListener("click", () => {
+    if (reduceMotion) { // no dot, no timer: one part per press
+      if (step >= ORDER.length) step = 0;
+      arrive(ORDER[step++]);
+      btn.textContent = step < ORDER.length ? LABEL.next : LABEL.again;
+    } else if (!run) go();
+    else if (!run.hopping) run.wake?.();
+  });
+  // anything that moves the visitor's attention stops the run
+  $$("#arch .node").forEach((n) => ["mouseenter", "focus", "click", "pointerdown"].forEach((ev) => n.addEventListener(ev, () => stop())));
+  document.addEventListener("visibilitychange", () => document.hidden && run && stop());
+  document.addEventListener("keydown", (e) => e.key === "Escape" && run && stop());
+  new IntersectionObserver(([e]) => !e.isIntersecting && run && stop()).observe(arch);
+})();
 
 /* ---------- MEDS case study: CI/CD pipeline run ---------- */
 let piping = false;

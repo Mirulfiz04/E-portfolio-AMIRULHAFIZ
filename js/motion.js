@@ -80,7 +80,8 @@
   });
 
   /* ---------- Hero drifts away as you scroll ---------- */
-  const heroIn = document.querySelector(".hero-copy, .hero > div");
+  // .hero-copy only: the old list ".hero-copy, .hero > div" matched the outer .hero-grid first, so the MEDS card and its mood buttons faded too
+  const heroIn = document.querySelector(".hero-copy");
   if (heroIn) gsap.to(heroIn, { yPercent: -14, opacity: 0.25, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
 
   /* ---------- Folders and stats pop in with a little bounce ---------- */

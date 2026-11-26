@@ -165,8 +165,15 @@ kbd { font: 600 0.75rem var(--mono); padding: 1px 6px; border: 1px solid var(--b
 .pill-sm { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
 .meds-face { font-size: 4.2rem; line-height: 1.2; text-align: center; margin: 12px 0 4px; }
 .meds-face.pop { animation: pop 0.5s var(--ease); }
+/* "Set the mood": one row of five 44px buttons (236px with the gaps) even at 320px */
+.mood { display: flex; justify-content: center; gap: 4px; margin: 0 0 8px; }
+.mood-btn { flex: none; width: 44px; height: 44px; padding: 0; font-size: 1.3rem; line-height: 1; color: var(--text); background: var(--surface); border: 1px solid var(--muted); border-radius: 12px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
+.mood-btn:hover { border-color: var(--accent); }
+.mood-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 @keyframes pop { 40% { transform: scale(1.25) rotate(-8deg); } }
 .meds-label { text-align: center; }
+/* on the narrowest phones "Detected emotion: Surprised 92%" can wrap while "Calm" does not, which made the card jump in height when the mood changed: keep two lines */
+@media (max-width: 360px) { .meds-label { min-height: 3.6em; } } /* a little over two lines: the mono confidence value makes a wrapped label about 1px taller than exactly 2 line-heights */
 .meds-vitals { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
 .meds-vitals > div { padding: 12px; border-radius: 12px; background: var(--surface-2); }
 .meds-vitals span.muted { display: block; font-size: 0.8rem; }
@@ -464,6 +471,9 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
 .node span { font-size: 1.6rem; }
 .node small { color: var(--muted); font-weight: 400; }
 .node.on { border-style: solid; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); transform: translateY(-3px); }
+/* "Send a heartbeat": a dot travels node to node; it lives inside #arch (position: relative) and never takes pointer events */
+.beat-row { margin: 14px 0 0; }
+.beat-dot { position: absolute; left: 0; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); pointer-events: none; }
 .arch-info { margin: 16px 0 0; padding: 14px 16px; min-height: 5.5em; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 12px 12px 0; }
 .pipe { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin-bottom: 18px; }
 .pipe::before { content: "→"; grid-column: 2; grid-row: 1; font-size: 1.6rem; color: var(--muted); }
@@ -582,6 +592,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   .f-peek img { top: 12px; width: 120px; height: 90px; }
   .f-front { min-height: calc(100% - 64px); }
   .fold-body { grid-template-columns: 1fr 1fr; }
+  .beat-row { text-align: right; } /* the fixed trophy sits bottom-left and used to cover a left-aligned button */
   .folders > .fold-body { margin-top: 0; } /* on one column the files sit between two folders, 14px from each like the folders themselves */
   .moments.desk { height: 480px; }
   .moments.desk .moment { width: 150px; }
@@ -618,7 +629,7 @@ code { font: 0.85em var(--mono); padding: 1px 6px; border-radius: 6px; backgroun
   :root, :root[data-theme] { --bg: #fff; --bg-2: #fff; --surface: #fff; --surface-2: #f3f4f6; --border: #d1d5db; --text: #111; --muted: #444; --accent: #006b55; --accent-2: #333; --accent-ink: #fff; color-scheme: light; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
   body { font-size: 10.5pt; line-height: 1.45; background: #fff; }
-  #lessons, #evidence, #deskMode, .proof, .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #reviews, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
+  #sendBeat, #beatStatus, .beat-dot, #lessons, #evidence, #deskMode, .proof, .trophy, .cs, #meds > p:last-of-type, .topbar, .progress, .hero, .scroll-hint, #moments, #reviews, #contact, .gh, .filters, .p-cover, .p-more, .photo, .facts, .footer, dialog, .toast, #confetti, .skip, .contact .cta, .socials, .eyebrow, .muted.small { display: none !important; }
   .print-head { display: block; padding-bottom: 8px; margin-bottom: 6px; border-bottom: 2px solid #006b55; }
   .print-head h1 { font-size: 20pt; margin: 0 0 2px; }
   .print-head p { margin: 0; font-size: 9.5pt; color: #333; }

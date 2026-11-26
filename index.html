@@ -103,6 +103,13 @@
             <span class="pill-sm">simulated</span>
           </div>
           <div class="meds-face" id="medsFace" aria-hidden="true">🙂</div>
+          <div class="mood" role="group" aria-label="Set the demo mood">
+            <button class="mood-btn" type="button" data-mood="Calm" aria-pressed="false" aria-label="Calm" title="Calm">😌</button>
+            <button class="mood-btn" type="button" data-mood="Neutral" aria-pressed="false" aria-label="Neutral" title="Neutral">😐</button>
+            <button class="mood-btn" type="button" data-mood="Happy" aria-pressed="false" aria-label="Happy" title="Happy">🙂</button>
+            <button class="mood-btn" type="button" data-mood="Surprised" aria-pressed="false" aria-label="Surprised" title="Surprised">😮</button>
+            <button class="mood-btn" type="button" data-mood="Excited" aria-pressed="false" aria-label="Excited" title="Excited">😄</button>
+          </div>
           <p class="meds-label">Detected emotion: <b id="medsEmotion">Happy</b> <span class="mono muted" id="medsConf">92%</span></p>
           <div class="meds-vitals">
             <div><span class="muted">Heart rate</span><b><span id="medsHr">78</span> <small>bpm</small></b>
@@ -206,6 +213,7 @@
           <button class="chip" type="button" aria-pressed="false" data-filter="design">Systems &amp; design</button>
         </div>
       </div>
+      <p class="sr" id="projStatus" role="status"></p>
       <div class="projects" id="projectList"><!-- rendered by js/script.js --></div>
       <div class="gh card reveal" id="ghActivity" hidden>
         <div class="gh-head">
@@ -257,6 +265,8 @@
             <button type="button" class="node" data-k="edge"><span>⚡</span>Edge Functions</button>
             <button type="button" class="node" data-k="claude"><span>✨</span>Claude API</button>
           </div>
+          <p class="beat-row"><button class="btn" type="button" id="sendBeat">▶ Send a heartbeat</button></p>
+          <p class="sr" id="beatStatus" role="status"></p>
           <p class="arch-info" id="archInfo" aria-live="polite">The ESP32 reads heart rate and SpO₂ and serves them over its own Wi-Fi hotspot. The app polls it, and a native Android channel pins that request to Wi-Fi so it still works while mobile data carries the internet.</p>
         </div>
 
