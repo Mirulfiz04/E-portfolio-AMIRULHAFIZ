@@ -700,9 +700,16 @@ $$(".ev").forEach((ev) => {
 /* ---------- Proof folders: click one to spill its evidence out ---------- */
 const momentIdx = (name) => moments.findIndex((m) => m.src.endsWith(`/${name}.jpg`));
 const folders = [
-  { k: "awards", icon: "🏆", name: "Awards & certificates", items: ["deans-award-cert", "workshop2-award", "w2-award", "deans-award-day", "2"] },
+  { k: "awards", icon: "🏆", name: "Awards & certificates", items: ["deans-award-cert", "workshop2-award", "w2-award", "deans-award-day", "2",
+    { label: "Gold Award, FTMK Workshop II (iPetro)", sub: "PDF · 0.8 MB", href: "assets/proof/gold-award-ipetro.pdf" },
+    { label: "ISIRA 2026 participant certificate", sub: "PDF · 0.7 MB", href: "assets/proof/isira-2026-participant-certificate.pdf" },
+    { label: "Facilitator certificate, CIIP 2026 (JPN Negeri Sembilan)", sub: "Image · 0.1 MB", href: "assets/proof/sijil-penghargaan-fasilitator.jpg" }] },
   { k: "events", icon: "📸", name: "Teaching & events", items: ["cip2026-workshop", "cip2026-mentoring", "cip2026-school-visit", "arduino2026-workshop", "arduino2026-prize", "cip2026-donation"] },
   { k: "reports", icon: "📄", name: "Reports & posters", items: ["w2-poster",
+    { label: "MEDS design paper, ISIRA 2026", sub: "PDF · 0.5 MB", href: "assets/proof/isira-meds-design-paper.pdf" },
+    { label: "MEDS app: Insights screen", sub: "Screenshot", href: "assets/proof/meds-insights.png" },
+    { label: "MEDS app: Emotion analytics", sub: "Screenshot", href: "assets/proof/meds-emotion-analytics.png" },
+    { label: "MEDS app: Session details", sub: "Screenshot", href: "assets/proof/meds-session-details.png" },
     { label: "FarmIntel report", sub: "PDF · 3.5 MB", href: "assets/reports/FarmIntel-Fruit & Vegetable Disease Detector Group 28.pdf" },
     { label: "Event Management System report", sub: "PDF · 1.6 MB", href: "assets/reports/event-management-system-report.pdf" }] }
 ];
